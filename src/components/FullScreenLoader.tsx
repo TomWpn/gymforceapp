@@ -1,6 +1,7 @@
 // src/components/FullScreenLoader.tsx
 import React from "react";
 import { View, ActivityIndicator, StyleSheet, Text } from "react-native";
+import NoMarginView from "./NoMarginView";
 
 interface FullScreenLoaderProps {
   message?: string; // Optional message to display
@@ -8,10 +9,10 @@ interface FullScreenLoaderProps {
 
 const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({ message }) => {
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <ActivityIndicator size="large" color="#0000ff" />
       {message && <Text style={styles.message}>{message}</Text>}
-    </View>
+    </NoMarginView>
   );
 };
 

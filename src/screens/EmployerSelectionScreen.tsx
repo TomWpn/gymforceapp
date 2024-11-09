@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -17,6 +16,8 @@ import { updateUserProfileWithCompany } from "../services/userProfileService"; /
 import { Company } from "../types"; // Import Company interface
 import { auth } from "../services/firebaseConfig";
 import { AppStackParamList } from "../navigation/AppStackParamList";
+import GymForceButton from "../components/GymForceButton";
+import NoMarginView from "../components/NoMarginView";
 
 type EmployerSelectionScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -82,7 +83,7 @@ const EmployerSelectionScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <Text style={styles.title}>Select Your Employer</Text>
       <TextInput
         style={styles.input}
@@ -90,7 +91,11 @@ const EmployerSelectionScreen = () => {
         value={query}
         onChangeText={setQuery}
       />
-      <Button title="Search" onPress={handleSearch} disabled={loading} />
+      <GymForceButton
+        title="Search"
+        onPress={handleSearch}
+        disabled={loading}
+      />
       {loading ? (
         <Text>Loading...</Text>
       ) : (
@@ -104,7 +109,7 @@ const EmployerSelectionScreen = () => {
           )}
         />
       )}
-    </View>
+    </NoMarginView>
   );
 };
 

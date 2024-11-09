@@ -22,6 +22,8 @@ import { auth } from "../services/firebaseConfig";
 import { Picker } from "@react-native-picker/picker";
 import Slider from "@react-native-community/slider";
 import { Address, GroupedCompanies, Company } from "../types";
+import GymForceButton from "../components/GymForceButton";
+import NoMarginView from "../components/NoMarginView";
 
 type GymSelectionRouteProp = RouteProp<AppStackParamList, "GymSelection">;
 type GymSelectionNavigationProp = StackNavigationProp<
@@ -154,7 +156,7 @@ const GymSelectionScreen = () => {
   console.log("Home Address:", homeAddress);
   console.log("Grouped Companies:", groupedCompanies);
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <Text style={styles.title}>Select Your Gym</Text>
 
       <Text>Choose a Source Location:</Text>
@@ -180,7 +182,7 @@ const GymSelectionScreen = () => {
       {loading && <Text>Loading gyms...</Text>}
 
       {!loading && groupedCompanies && (
-        <View>
+        <NoMarginView>
           <Text>Select a Gym:</Text>
           <FlatList
             data={groupedCompanies[Object.keys(groupedCompanies)[0]]}
@@ -194,11 +196,11 @@ const GymSelectionScreen = () => {
               </TouchableOpacity>
             )}
           />
-        </View>
+        </NoMarginView>
       )}
 
-      <Button title="Refresh List" onPress={fetchNearbyGyms} />
-    </View>
+      <GymForceButton title="Refresh List" onPress={fetchNearbyGyms} />
+    </NoMarginView>
   );
 };
 

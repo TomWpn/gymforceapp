@@ -4,6 +4,8 @@ import { View, Text, TextInput, Button, Alert, StyleSheet } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
+import GymForceButton from "../components/GymForceButton";
+import NoMarginView from "../components/NoMarginView";
 
 const LoginScreen = () => {
   const { setUser } = useAuth();
@@ -31,7 +33,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
@@ -47,12 +49,12 @@ const LoginScreen = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <Button
+      <GymForceButton
         title={loading ? "Logging in..." : "Login"}
         onPress={handleLogin}
         disabled={loading}
       />
-    </View>
+    </NoMarginView>
   );
 };
 

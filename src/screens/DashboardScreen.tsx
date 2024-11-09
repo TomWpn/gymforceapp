@@ -1,29 +1,68 @@
-import React, { useState } from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
-import { useAuth } from "../context/AuthContext";
-import FullScreenLoader from "../components/FullScreenLoader";
+// src/screens/DashboardScreen.tsx
+import React, { useEffect, useState } from "react";
+import { Text, StyleSheet, ScrollView } from "react-native";
+import GymCard from "../components/GymCard";
+import EmployerCard from "../components/EmployerCard";
+import UserDetailsCard from "../components/UserDetailsCard";
+import CheckInHistoryCard from "../components/CheckInHistoryCard";
+import { getUserProfile } from "../services/userProfileService";
+import { UserProfile } from "../types";
+import { auth } from "../services/firebaseConfig";
+import Accordion from "../components/Accordion";
+import Padding from "../components/Padding";
 
 const DashboardScreen = () => {
-  const { signOut } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  const handleSignOut = async () => {
-    setLoading(true);
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        const profile = await getUserProfile(uid);
+        setUserProfile(profile);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Dashboard</Text>
-      <Button title="Sign Out" onPress={handleSignOut} />
-      {loading && <FullScreenLoader message="Signing Out..." />}
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      {userProfile && (
+        <>
+          {/* My Gym section (not collapsible) */}
+          <Padding size={8}>
+            <Text style={styles.sectionTitle}>My Gym</Text>
+            <GymCard gym={userProfile.gym} />
+          </Padding>
+
+          {/* Employer Information (collapsible) */}
+          <Padding size={8}>
+            <Accordion title="Employer Information">
+              <EmployerCard employer={userProfile.employer} />
+            </Accordion>
+          </Padding>
+
+          {/* User Profile (collapsible) */}
+          <Padding size={8}>
+            <Accordion title="User Profile">
+              <UserDetailsCard
+                name={userProfile.name}
+                phone={userProfile.phone}
+                address={userProfile.address}
+              />
+            </Accordion>
+          </Padding>
+
+          {/* Check-In History (collapsible) */}
+          <Padding size={8}>
+            <Accordion title="Check-In History">
+              <CheckInHistoryCard />
+            </Accordion>
+          </Padding>
+        </>
+      )}
+    </ScrollView>
   );
 };
 
@@ -31,13 +70,14 @@ export default DashboardScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f9f9f9",
+    flexGrow: 1, // This helps ScrollView enable vertical scrolling
   },
-  title: {
-    fontSize: 24,
+  sectionTitle: {
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    color: "#333",
+    marginVertical: 10,
   },
 });

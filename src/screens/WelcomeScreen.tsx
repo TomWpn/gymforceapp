@@ -1,12 +1,11 @@
 // WelcomeScreen.tsx
 import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
-import {
-  AppRouteProp,
-  AppStackParamList,
-} from "../navigation/AppStackParamList";
+import { AppStackParamList } from "../navigation/AppStackParamList";
+import GymForceButton from "../components/GymForceButton";
+import NoMarginView from "../components/NoMarginView";
 
 type WelcomeScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -17,14 +16,17 @@ const WelcomeScreen = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
 
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <Text style={styles.title}>Welcome to Gym Force</Text>
-      <Button
+      <GymForceButton
         title="Sign Up"
         onPress={() => navigation.navigate("SignUp", { mode: "signup" })}
       />
-      <Button title="Log In" onPress={() => navigation.navigate("Login")} />
-    </View>
+      <GymForceButton
+        title="Log In"
+        onPress={() => navigation.navigate("Login")}
+      />
+    </NoMarginView>
   );
 };
 

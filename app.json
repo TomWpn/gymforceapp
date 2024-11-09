@@ -23,6 +23,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "entryPoint": "./src/App.tsx"
+    "entryPoint": "./src/App.tsx",
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

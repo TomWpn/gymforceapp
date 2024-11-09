@@ -1,12 +1,14 @@
 // src/screens/UserDetailsScreen.tsx
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import { Text, TextInput, StyleSheet, Alert } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { updateUserProfileField } from "../services/userProfileService";
 import { auth } from "../services/firebaseConfig";
 import { AppStackParamList } from "../navigation/AppStackParamList";
 import { StackNavigationProp } from "@react-navigation/stack";
+import GymForceButton from "../components/GymForceButton";
+import NoMarginView from "../components/NoMarginView";
 
 type UserDetailsScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -67,7 +69,7 @@ const UserDetailsScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <NoMarginView style={styles.container}>
       <Text style={styles.title}>Enter Your Details</Text>
       <TextInput
         style={styles.input}
@@ -101,12 +103,12 @@ const UserDetailsScreen = () => {
           textInput: styles.input,
         }}
         requestUrl={{
-          useOnPlatform: "all",
+          useOnPlatform: "web",
           url: "https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api",
         }}
       />
-      <Button title="Save Details" onPress={handleSaveDetails} />
-    </View>
+      <GymForceButton title="Save Details" onPress={handleSaveDetails} />
+    </NoMarginView>
   );
 };
 

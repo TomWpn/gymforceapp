@@ -1,0 +1,4 @@
+[debug] [2024-11-08T23:19:22.281Z] [Firebase Plugin] Activating Firebase extension.
+[debug] [2024-11-08T23:19:30.862Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[debug] [2024-11-08T23:19:33.009Z] 'fdc build' failed with error: Unable to build your Data Connect schema and connectors (exit code 1): E1108 18:19:33.006856   76366 cmd.go:41] Error loading data connect config: could not find dataconnect.yaml in `/Users/tomwash/Code/GymForceApp/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"'fdc build' failed with error: Unable to build your Data Connect schema and connectors (exit code 1): E1108 18:19:33.006856   76366 cmd.go:41] Error loading data connect config: could not find dataconnect.yaml in `/Users/tomwash/Code/GymForceApp/dataconnect`\n"}}

@@ -7,11 +7,17 @@ import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc } from "firebase/firestore";
 import { firestore } from "../services/firebaseConfig";
 import { AppNavigationProp } from "./AppStackParamList";
+import { useFonts } from "expo-font";
 
 const AppContent = () => {
   const { user, loading } = useAuth();
   const [profileLoading, setProfileLoading] = useState(true);
   const navigation = useNavigation<AppNavigationProp>();
+
+  const [fontsLoaded] = useFonts({
+    Gymforce: require("../../assets/fonts/VTFRedzone-Classic.ttf"),
+    OpenSansGymforce: require("../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf"),
+  });
 
   useEffect(() => {
     const checkUserProfileCompleteness = async () => {
@@ -47,7 +53,7 @@ const AppContent = () => {
     }
   }, [user, navigation]);
 
-  if (loading || profileLoading) return null; // Optionally add a loading indicator
+  if (loading || profileLoading || !fontsLoaded) return null; // Optionally add a loading indicator
 
   return user ? <MainStack /> : <AuthStack />;
 };
