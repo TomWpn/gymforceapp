@@ -1,65 +1,43 @@
 // src/screens/DashboardScreen.tsx
-import React, { useEffect, useState } from "react";
-import { Text, StyleSheet, ScrollView } from "react-native";
+import React, { useCallback } from "react";
+import { StyleSheet, ScrollView } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import GymCard from "../components/GymCard";
-import EmployerCard from "../components/EmployerCard";
-import UserDetailsCard from "../components/UserDetailsCard";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
-import { getUserProfile } from "../services/userProfileService";
-import { UserProfile } from "../types";
-import { auth } from "../services/firebaseConfig";
 import Accordion from "../components/Accordion";
-import Padding from "../components/Padding";
+import FlexibleSpacer from "../components/FlexibleSpacer";
+import { useUserProfileContext } from "../context/UserProfileContext";
+import { useCheckInContext } from "../context/CheckInContext";
 
 const DashboardScreen = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { userProfile, refreshUserProfile } = useUserProfileContext();
+  const { fetchCheckInHistory } = useCheckInContext();
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const uid = auth.currentUser?.uid;
-      if (uid) {
-        const profile = await getUserProfile(uid);
-        setUserProfile(profile);
-      }
-    };
+  // Refresh user profile every time the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      refreshUserProfile();
+    }, [refreshUserProfile])
+  );
 
-    fetchUserProfile();
-  }, []);
+  // fetch Check in history on load
+  useFocusEffect(
+    useCallback(() => {
+      fetchCheckInHistory();
+    }, [])
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {userProfile && (
         <>
-          {/* My Gym section (not collapsible) */}
-          <Padding size={8}>
-            <Text style={styles.sectionTitle}>My Gym</Text>
-            <GymCard gym={userProfile.gym} />
-          </Padding>
-
-          {/* Employer Information (collapsible) */}
-          <Padding size={8}>
-            <Accordion title="Employer Information">
-              <EmployerCard employer={userProfile.employer} />
-            </Accordion>
-          </Padding>
-
-          {/* User Profile (collapsible) */}
-          <Padding size={8}>
-            <Accordion title="User Profile">
-              <UserDetailsCard
-                name={userProfile.name}
-                phone={userProfile.phone}
-                address={userProfile.address}
-              />
-            </Accordion>
-          </Padding>
+          <GymCard />
 
           {/* Check-In History (collapsible) */}
-          <Padding size={8}>
-            <Accordion title="Check-In History">
-              <CheckInHistoryCard />
-            </Accordion>
-          </Padding>
+          <FlexibleSpacer size={16} top />
+          <Accordion title="Check-In History">
+            <CheckInHistoryCard />
+          </Accordion>
         </>
       )}
     </ScrollView>
@@ -72,7 +50,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: "#f9f9f9",
-    flexGrow: 1, // This helps ScrollView enable vertical scrolling
+    flexGrow: 1,
   },
   sectionTitle: {
     fontSize: 22,

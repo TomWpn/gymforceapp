@@ -8,6 +8,7 @@ import React, {
 import { getUserProfile } from "../services/userProfileService";
 import { auth } from "../services/firebaseConfig";
 import { UserProfile } from "../types";
+import { onAuthStateChanged } from "firebase/auth"; // Import auth listener
 
 interface UserProfileContextType {
   userProfile: UserProfile | null;
@@ -46,7 +47,16 @@ export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   useEffect(() => {
-    refreshUserProfile();
+    // Set up auth state listener to trigger profile refresh
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        refreshUserProfile();
+      } else {
+        setUserProfile(null); // Reset user profile when signed out
+      }
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
   return (

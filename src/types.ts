@@ -1,5 +1,7 @@
 // src/types.ts
 
+import { CheckInRecord } from "./services/checkInService";
+
 // HubSpot Company Properties Interface
 export interface CompanyProperties {
   address?: string | null;
@@ -10,7 +12,7 @@ export interface CompanyProperties {
   name?: string | null;
   city?: string | null;
   state?: string | null;
-  website?: string | null;
+  domain?: string | null;
   zip?: string | null;
   lifecyclestage: string;
   plan_nutrition: string;
@@ -19,6 +21,7 @@ export interface CompanyProperties {
   owner_blurb?: string | null;
   lat?: string | null;
   lng?: string | null;
+  app_background_image_url?: string | null;
 }
 
 // HubSpot Company Interface
@@ -52,4 +55,5 @@ export interface UserProfile {
   address?: Address;
   employer?: Company; // Following the HubSpot Company structure
   gym?: Company; // Following the HubSpot Company structure
+  checkInHistory?: CheckInRecord[];
 }

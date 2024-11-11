@@ -1,121 +1,79 @@
-// src/components/UserDetailsCard.tsx
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { auth } from "../services/firebaseConfig";
 import { AppStackParamList } from "../navigation/AppStackParamList";
 import { StackNavigationProp } from "@react-navigation/stack";
 import GymForceButton from "./GymForceButton";
-import NoMarginView from "./NoMarginView";
-import Spacer from "./Spacer";
-import { Address } from "../types";
+import CardWithIconBackground from "./CardWithIconBackground";
+import { useUserProfileContext } from "../context/UserProfileContext";
 import FlexibleSpacer from "./FlexibleSpacer";
-
-type UserDetailsCardProps = {
-  name: string | undefined;
-  phone: string | undefined;
-  email?: string;
-  address?: Address;
-};
+import GymForceText from "./GymForceText";
 
 type UserDetailsNavigationProp = StackNavigationProp<
   AppStackParamList,
   "UserDetails"
 >;
 
-const UserDetailsCard: React.FC<UserDetailsCardProps> = ({
-  name,
-  phone,
-  email,
-  address,
-}) => {
+const UserDetailsCard: React.FC = () => {
   const navigation = useNavigation<UserDetailsNavigationProp>();
+  const { userProfile } = useUserProfileContext();
 
   const handleEditProfile = () => {
     navigation.navigate("UserDetails", { mode: "edit" });
   };
 
-  const handleSignOut = async () => {
-    try {
-      await auth.signOut();
-      alert("Signed out successfully!");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      alert("Unable to sign out at this time.");
-    }
-  };
-
   return (
-    <NoMarginView style={styles.card}>
+    <CardWithIconBackground iconLibrary="Ionicons" iconName="person-outline">
       <View style={styles.header}>
-        <Text style={styles.title}>User Profile</Text>
+        <GymForceText style={styles.title}>Your Details</GymForceText>
       </View>
-
-      {/* User Details Section */}
       <View style={styles.details}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.info}>{name || "Not provided"}</Text>
+        <GymForceText style={styles.label}>Name:</GymForceText>
+        <GymForceText style={styles.info}>
+          {userProfile?.name || "Not provided"}
+        </GymForceText>
 
-        <FlexibleSpacer size={8} top />
+        <FlexibleSpacer size={4} top />
+        <GymForceText style={styles.label}>Phone:</GymForceText>
+        <GymForceText style={styles.info}>
+          {userProfile?.phone || "Not provided"}
+        </GymForceText>
 
-        <Text style={styles.label}>Phone:</Text>
-        <Text style={styles.info}>{phone || "Not provided"}</Text>
-
-        {email && (
+        <FlexibleSpacer size={4} top />
+        {userProfile?.email && (
           <>
-            <FlexibleSpacer size={8} top />
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.info}>{email}</Text>
+            <GymForceText style={styles.label}>Email:</GymForceText>
+            <GymForceText style={styles.info}>{userProfile.email}</GymForceText>
           </>
         )}
 
-        {address && (
+        <FlexibleSpacer size={4} top />
+        {userProfile?.address && (
           <>
-            <FlexibleSpacer size={8} top />
-            <Text style={styles.label}>Address:</Text>
-            <Text style={styles.info}>{address.formatted_address}</Text>
+            <GymForceText style={styles.label}>Address:</GymForceText>
+            <GymForceText style={styles.info}>
+              {userProfile.address.formatted_address}
+            </GymForceText>
           </>
         )}
       </View>
 
-      <Spacer size={16} />
-
-      {/* Action Buttons */}
       <View style={styles.actions}>
         <GymForceButton
           title="Edit Profile"
           onPress={handleEditProfile}
-          fullWidth={true}
           variant="primary"
-          size="large"
-        />
-        <FlexibleSpacer size={8} top />
-        <GymForceButton
-          title="Sign Out"
-          onPress={handleSignOut}
-          fullWidth={true}
-          variant="tertiary"
           size="small"
+          width={"50%"}
         />
       </View>
-    </NoMarginView>
+    </CardWithIconBackground>
   );
 };
 
 export default UserDetailsCard;
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 20,
-    marginVertical: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   header: {
     alignItems: "center",
     marginBottom: 12,

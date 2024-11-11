@@ -4,7 +4,9 @@
     "strict": true,
     "paths": {
       "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
-    }
+    },
+
+    "module": "esnext"
   },
   "include": ["env.d.ts", "src/**/*", "App.tsx"]
 }

@@ -1,7 +1,8 @@
 // src/components/Accordion.tsx
 import React, { useState } from "react";
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import NoMarginView from "./NoMarginView";
+import GymForceText from "./GymForceText";
 
 interface AccordionProps {
   title: string;
@@ -16,8 +17,10 @@ const Accordion: React.FC<AccordionProps> = ({ title, children }) => {
   return (
     <NoMarginView style={styles.container}>
       <TouchableOpacity onPress={toggleExpanded} style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.toggleIcon}>{isExpanded ? "-" : "+"}</Text>
+        <GymForceText style={styles.title}>{title}</GymForceText>
+        <GymForceText style={styles.toggleIcon}>
+          {isExpanded ? "-" : "+"}
+        </GymForceText>
       </TouchableOpacity>
       {isExpanded && (
         <NoMarginView style={styles.content}>{children}</NoMarginView>

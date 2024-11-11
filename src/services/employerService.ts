@@ -40,3 +40,35 @@ export const fetchEmployers = async (query: string) => {
     throw new Error("Failed to fetch employers.");
   }
 };
+
+/**
+ * Fetches gym details from Firebase by gym ID.
+ * @param companyId - The ID of the gym (HubSpot company ID).
+ * @returns The latest gym data from HubSpot.
+ */
+export const fetchEmployerById = async (companyId: string) => {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const idToken = await user.getIdToken();
+  try {
+    const response = await axios.get(
+      `${process.env.FIREBASE_FUNCTION_HOST_URL}/getCompanyByIdSecondGen?companyId=${companyId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    );
+
+    return response.data.company;
+  } catch (error: any) {
+    console.error(
+      "Error fetching gym data from HubSpot:",
+      error?.response?.data || error
+    );
+    throw new Error("Failed to fetch gym data.");
+  }
+};

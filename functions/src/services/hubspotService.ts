@@ -1,4 +1,3 @@
-// functions/src/services/hubspotService.ts
 import axios from "axios";
 import { defineString } from "firebase-functions/params";
 import { GroupedCompanies } from "../types/gymforce";
@@ -14,7 +13,66 @@ const getHubSpotHeaders = async () => ({
   "Content-Type": "application/json",
 });
 
-// Function to search employers by name and update missing coordinates if possible
+const properties = [
+  "name",
+  "domain",
+  "industry",
+  "type",
+  "lat",
+  "lng",
+  "address",
+  "city",
+  "state",
+  "zip",
+  "app_background_image_url",
+  "owner_blurb",
+  "createdate",
+  "hs_lastmodifieddate",
+  "app_background_image_url",
+  "owner_blurb",
+  "description", // Add any additional properties as needed
+];
+
+// New function to fetch a company by ID from HubSpot
+export const getCompanyById = async (companyId: string) => {
+  try {
+    const headers = await getHubSpotHeaders();
+
+    // Specify properties you need
+
+    // Fetch company data from HubSpot with specified properties
+    const response = await axios.get(
+      `${HUBSPOT_BASE_URL}/${companyId}?properties=${properties.join(",")}`,
+      { headers }
+    );
+
+    const company = response.data;
+    console.log("Fetched company from HubSpot:", company);
+
+    // Check if lat/lng are missing and attempt to update them
+    let { lat, lng } = company.properties;
+
+    if (!lat || !lng) {
+      const fullAddress = `${company.properties.address}, ${company.properties.city}, ${company.properties.state}, ${company.properties.zip}`;
+      const coordinates = await geocodeAddress(fullAddress);
+      if (coordinates) {
+        lat = coordinates.lat;
+        lng = coordinates.lng;
+        await updateCompanyCoordinates(companyId, lat, lng);
+      }
+    }
+
+    // Return the company object with complete properties
+    return {
+      ...company,
+    };
+  } catch (error) {
+    console.error(`Error fetching company ${companyId} from HubSpot:`, error);
+    throw error;
+  }
+};
+
+// Existing function to search employers by name and update missing coordinates if possible
 export const searchEmployersInHubSpot = async (query: string) => {
   const filterGroups = [
     {
@@ -23,17 +81,6 @@ export const searchEmployersInHubSpot = async (query: string) => {
         { propertyName: "type", operator: "EQ", value: "SMB" },
       ],
     },
-  ];
-  const properties = [
-    "name",
-    "domain",
-    "industry",
-    "type",
-    "lat",
-    "lng",
-    "address",
-    "city",
-    "state",
   ];
 
   try {
@@ -73,23 +120,13 @@ export const searchEmployersInHubSpot = async (query: string) => {
   }
 };
 
-// Function to search facilities by location and range with distance calculations
+// Existing function to search facilities by location and range with distance calculations
 export const getFacilitiesFromHubSpot = async (
   location: { lat: number; lng: number },
   range: number
 ): Promise<GroupedCompanies> => {
   const filterGroups = [
     { filters: [{ propertyName: "type", operator: "EQ", value: "FACILITY" }] },
-  ];
-  const properties = [
-    "name",
-    "domain",
-    "industry",
-    "lat",
-    "lng",
-    "address",
-    "city",
-    "state",
   ];
 
   try {
@@ -136,7 +173,7 @@ export const getFacilitiesFromHubSpot = async (
   }
 };
 
-// Helper function to update HubSpot company with new lat/lng coordinates
+// Existing helper function to update HubSpot company with new lat/lng coordinates
 const updateCompanyCoordinates = async (
   companyId: string,
   lat: number,

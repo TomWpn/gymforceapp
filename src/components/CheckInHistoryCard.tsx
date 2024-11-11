@@ -1,80 +1,37 @@
-// src/components/CheckInHistoryCard.tsx
-import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, View } from "react-native";
-import { auth } from "../services/firebaseConfig";
-import { getCheckInHistory, CheckInRecord } from "../services/checkInService";
-import { format } from "date-fns";
+import React, { useEffect } from "react";
+import { StyleSheet, View } from "react-native";
 import NoMarginView from "./NoMarginView";
-
-interface GroupedCheckIn {
-  gymName: string;
-  lastCheckInDate: string;
-  checkInCount: number;
-}
+import GymForceText from "./GymForceText";
+import Padding from "./Padding";
+import { useCheckInContext } from "../context/CheckInContext";
 
 const CheckInHistoryCard: React.FC = () => {
-  const [groupedCheckInHistory, setGroupedCheckInHistory] = useState<
-    GroupedCheckIn[]
-  >([]);
+  const { groupedCheckInHistory, fetchCheckInHistory } = useCheckInContext();
 
   useEffect(() => {
-    const fetchCheckInHistory = async () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-
-      try {
-        const history = await getCheckInHistory(uid);
-
-        // Group check-ins by gym
-        const groupedHistory = history.reduce(
-          (acc: Record<string, GroupedCheckIn>, checkIn) => {
-            const gymId = checkIn.gymId;
-            const gymName = checkIn.gymName; // Assuming checkIn has gymName
-
-            const checkInDate = format(
-              new Date(checkIn.timestamp.seconds * 1000),
-              "MMMM d, yyyy, h:mm a"
-            );
-
-            if (!acc[gymId]) {
-              acc[gymId] = {
-                gymName,
-                lastCheckInDate: checkInDate,
-                checkInCount: 1,
-              };
-            } else {
-              acc[gymId].lastCheckInDate = checkInDate; // Update to the latest check-in date
-              acc[gymId].checkInCount += 1;
-            }
-
-            return acc;
-          },
-          {}
-        );
-
-        setGroupedCheckInHistory(Object.values(groupedHistory));
-      } catch (error) {
-        console.error("Error fetching check-in history:", error);
-      }
-    };
-
     fetchCheckInHistory();
   }, []);
 
   return (
     <NoMarginView style={styles.card}>
-      <Text style={styles.title}>Check-In History</Text>
-
       {groupedCheckInHistory.length > 0 ? (
         groupedCheckInHistory.map((gym, index) => (
           <View key={index} style={styles.historyItem}>
-            <Text style={styles.gymName}>{gym.gymName}</Text>
-            <Text>Last Check-In: {gym.lastCheckInDate}</Text>
-            <Text>Total Check-Ins: {gym.checkInCount}</Text>
+            <GymForceText color="#000" type="Subtitle">
+              {gym.gymName}
+            </GymForceText>
+            <GymForceText color="#a9a9a9" type="Note">
+              Last Check-In: {gym.lastCheckInDate}
+            </GymForceText>
+            <Padding vertical size={8}>
+              <GymForceText color="#000">
+                Total Check-Ins: {gym.checkInCount}
+              </GymForceText>
+            </Padding>
           </View>
         ))
       ) : (
-        <Text style={styles.noHistory}>No check-ins yet.</Text>
+        <GymForceText style={styles.noHistory}>No check-ins yet.</GymForceText>
       )}
     </NoMarginView>
   );

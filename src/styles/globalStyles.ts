@@ -9,6 +9,9 @@ const globalStyles = StyleSheet.create({
     marginLeft: Platform.select({ ios: 0, android: 0, web: 0 }),
     marginRight: Platform.select({ ios: 0, android: 0, web: 0 }),
   },
+  text: {
+    fontFamily: "Gymforce", // Use your font name here
+  },
 });
 
 export default globalStyles;

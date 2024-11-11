@@ -1,26 +1,30 @@
 import React from "react";
-import { View, Text, StyleSheet, Alert, Linking } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { logCheckIn } from "../services/checkInService";
-import { Company } from "../types";
-import { AppStackParamList } from "../navigation/AppStackParamList";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { auth } from "../services/firebaseConfig";
 import GymForceButton from "./GymForceButton";
 import Spacer from "./Spacer";
-import NoMarginView from "./NoMarginView";
-
-type GymCardProps = {
-  gym: Company | undefined;
-};
+import CardWithIconBackground from "./CardWithIconBackground";
+import { AppStackParamList } from "../navigation/AppStackParamList";
+import { useUserProfileContext } from "../context/UserProfileContext";
+import { auth } from "../services/firebaseConfig";
+import { handleOpenMap } from "../services/gymService";
+import GymForceText from "./GymForceText";
+import { useCheckInContext } from "../context/CheckInContext";
 
 type GymSelectionNavigationProp = StackNavigationProp<
   AppStackParamList,
   "GymSelection"
 >;
 
-const GymCard: React.FC<GymCardProps> = ({ gym }) => {
+const GymCard: React.FC<{ showCheckIn?: boolean }> = ({
+  showCheckIn = true,
+}) => {
   const navigation = useNavigation<GymSelectionNavigationProp>();
+  const { userProfile } = useUserProfileContext();
+  const { fetchCheckInHistory } = useCheckInContext();
+  const gym = userProfile?.gym;
 
   const handleEditGym = () => {
     navigation.navigate("GymSelection", { mode: "edit" });
@@ -32,54 +36,40 @@ const GymCard: React.FC<GymCardProps> = ({ gym }) => {
       const gymId = gym?.id;
       if (uid && gymId) {
         await logCheckIn(uid, gymId, gym.properties.name!);
-        alert("Check-in successful!");
+        await fetchCheckInHistory();
+        // alert("Check-in successful!");
       } else {
-        alert("User or Gym information is missing.");
+        // alert("User or Gym information is missing.");
       }
     } catch (error) {
       console.error("Error checking in:", error);
-      alert("Unable to check in at this time.");
+      // alert("Unable to check in at this time.");
     }
-  };
-
-  const handleOpenMap = () => {
-    if (!gym?.properties.address || !gym?.properties.city) {
-      Alert.alert("Location unavailable", "No address found for this gym.");
-      return;
-    }
-
-    const address = `${gym.properties.address}, ${gym.properties.city}`;
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      address
-    )}`;
-
-    Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          Alert.alert("Error", "Unable to open the maps app.");
-        }
-      })
-      .catch((err) => console.error("Error opening map:", err));
   };
 
   return (
-    <NoMarginView style={styles.card}>
+    <CardWithIconBackground
+      iconLibrary="MaterialCommunityIcons"
+      iconName="weight-lifter"
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>{gym?.properties.name || "Gym Name"}</Text>
+        <GymForceText style={styles.title}>
+          {gym?.properties.name || "Gym Name"}
+        </GymForceText>
       </View>
 
       {/* Main Action */}
-      <View style={styles.mainAction}>
-        <GymForceButton
-          fullWidth={true}
-          title="Check In"
-          variant="secondary"
-          onPress={handleCheckIn}
-          size="large"
-        />
-      </View>
+      {showCheckIn && (
+        <View style={styles.mainAction}>
+          <GymForceButton
+            fullWidth={true}
+            title="Check In"
+            variant="secondary"
+            onPress={handleCheckIn}
+            size="large"
+          />
+        </View>
+      )}
 
       <Spacer size={20} />
 
@@ -95,29 +85,18 @@ const GymCard: React.FC<GymCardProps> = ({ gym }) => {
         <GymForceButton
           title="Get Directions"
           variant="tertiary"
-          onPress={handleOpenMap}
+          onPress={() => handleOpenMap(gym!)}
           size="small"
           width="48%" // Adjust width to half of the row
         />
       </View>
-    </NoMarginView>
+    </CardWithIconBackground>
   );
 };
 
 export default GymCard;
 
 const styles = StyleSheet.create({
-  card: {
-    padding: 20,
-    marginVertical: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   header: {
     alignItems: "center",
     marginBottom: 12,

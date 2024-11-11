@@ -2,6 +2,7 @@
 import React from "react";
 import { View, ActivityIndicator, StyleSheet, Text } from "react-native";
 import NoMarginView from "./NoMarginView";
+import GymForceText from "./GymForceText";
 
 interface FullScreenLoaderProps {
   message?: string; // Optional message to display
@@ -11,7 +12,7 @@ const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({ message }) => {
   return (
     <NoMarginView style={styles.container}>
       <ActivityIndicator size="large" color="#0000ff" />
-      {message && <Text style={styles.message}>{message}</Text>}
+      {message && <GymForceText style={styles.message}>{message}</GymForceText>}
     </NoMarginView>
   );
 };

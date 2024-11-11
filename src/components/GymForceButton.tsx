@@ -1,21 +1,16 @@
+// GymForceButton.tsx
 import React from "react";
-import {
-  Pressable,
-  Text,
-  StyleProp,
-  ViewStyle,
-  TextStyle,
-  DimensionValue,
-} from "react-native";
+import { Pressable, DimensionValue } from "react-native";
+import GymForceText from "./GymForceText";
 
 interface GymForceButtonProps {
   title: string;
-  onPress: () => void;
+  onPress: any;
   variant?: "primary" | "secondary" | "tertiary";
   size?: "small" | "large";
   disabled?: boolean;
-  width?: DimensionValue | "auto"; // Use `auto` or a specific number width
-  fullWidth?: boolean; // New prop to handle full width using `flex: 1`
+  width?: DimensionValue | "auto";
+  fullWidth?: boolean;
 }
 
 const GymForceButton: React.FC<GymForceButtonProps> = ({
@@ -24,8 +19,8 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
   variant = "primary",
   size,
   disabled = false,
-  width = "auto", // Default to auto
-  fullWidth = false, // Default to false, only set to true when you want full width
+  width = "auto",
+  fullWidth = false,
 }) => {
   const backgroundColor =
     variant === "primary"
@@ -50,16 +45,15 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
         paddingVertical,
         paddingHorizontal,
         minWidth: 100,
-        width: fullWidth ? undefined : width, // Use flex if fullWidth is true
-        flex: fullWidth ? 1 : undefined, // Full width if fullWidth is true
+        width: fullWidth ? "100%" : width, // Use "100%" for fullWidth
         borderStyle,
         borderColor,
         borderWidth,
-        alignSelf: fullWidth ? "stretch" : "center", // Center or stretch based on fullWidth
+        alignSelf: fullWidth ? "stretch" : "center", // Stretch or center based on fullWidth
         ...(disabled ? { opacity: 0.5 } : {}),
       }}
     >
-      <Text
+      <GymForceText
         style={{
           color: variant === "tertiary" ? "black" : "white",
           fontSize,
@@ -68,7 +62,7 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
         }}
       >
         {title}
-      </Text>
+      </GymForceText>
     </Pressable>
   );
 };

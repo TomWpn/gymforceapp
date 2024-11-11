@@ -4,7 +4,6 @@ import {
   collection,
   addDoc,
   query,
-  where,
   getDocs,
   Timestamp,
 } from "firebase/firestore";
@@ -38,15 +37,14 @@ export const logCheckIn = async (
   }
 };
 
+// Function to get the check-in history for a user
 export const getCheckInHistory = async (
   uid: string
 ): Promise<CheckInRecord[]> => {
   const checkInRef = collection(firestore, `users/${uid}/checkIns`);
 
-  const checkInQuery = query(checkInRef);
-
   try {
-    const snapshot = await getDocs(checkInQuery);
+    const snapshot = await getDocs(query(checkInRef));
     const checkIns = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),

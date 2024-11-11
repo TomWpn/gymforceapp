@@ -37,7 +37,7 @@ const AppContent = () => {
           } else if (!userData?.gym) {
             navigation.navigate("GymSelection", { mode: "signup" });
           } else {
-            navigation.navigate("Dashboard");
+            navigation.navigate("BottomTabs", {});
           }
         } else {
           navigation.navigate("UserDetails", { mode: "signup" });
