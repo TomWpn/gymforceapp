@@ -57,3 +57,15 @@ export interface UserProfile {
   gym?: Company; // Following the HubSpot Company structure
   checkInHistory?: CheckInRecord[];
 }
+
+export interface GymReview {
+  gymId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  ownerNote: string;
+}
+
+export type Gym = Company & {
+  review: GymReview;
+};

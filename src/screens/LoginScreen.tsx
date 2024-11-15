@@ -43,7 +43,7 @@ const LoginScreen = () => {
       );
       setUser(userCredential.user);
     } catch (error: any) {
-      // Alert.alert("Login Error", error.message);
+      Alert.alert("Login Error", error.message);
     } finally {
       setLoading(false);
     }

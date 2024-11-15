@@ -5,6 +5,7 @@ import GymScreen from "../screens/GymScreen";
 import EmployerScreen from "../screens/EmployerScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import { useDynamicIcon } from "../hooks/useDynamicIcon";
+import GymForceText from "./GymForceText";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,7 +15,8 @@ const BottomTabs = () => {
   const BusinessIcon = useDynamicIcon("Ionicons");
   const SettingsIcon = useDynamicIcon("Ionicons");
 
-  if (!HomeIcon || !FitnessIcon || !BusinessIcon || !SettingsIcon) return null; // Ensure all icons are loaded
+  if (!HomeIcon || !FitnessIcon || !BusinessIcon || !SettingsIcon)
+    return <GymForceText>app load failed</GymForceText>; // Ensure all icons are loaded
 
   return (
     <Tab.Navigator

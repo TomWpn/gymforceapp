@@ -1,7 +1,5 @@
-// src/screens/DashboardScreen.tsx
-import React, { useCallback } from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, ScrollView, ActivityIndicator, View } from "react-native";
 import GymCard from "../components/GymCard";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
 import Accordion from "../components/Accordion";
@@ -12,24 +10,29 @@ import { useCheckInContext } from "../context/CheckInContext";
 const DashboardScreen = () => {
   const { userProfile, refreshUserProfile } = useUserProfileContext();
   const { fetchCheckInHistory } = useCheckInContext();
+  const [loading, setLoading] = useState(true);
 
-  // Refresh user profile every time the screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      refreshUserProfile();
-    }, [refreshUserProfile])
-  );
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      setLoading(true);
+      await refreshUserProfile();
+      await fetchCheckInHistory();
+      setLoading(false);
+    };
+    loadUserProfile();
+  }, []);
 
-  // fetch Check in history on load
-  useFocusEffect(
-    useCallback(() => {
-      fetchCheckInHistory();
-    }, [])
-  );
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {userProfile && (
+      {userProfile && !loading && (
         <>
           <GymCard />
 
@@ -51,6 +54,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f9f9f9",
     flexGrow: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
   },
   sectionTitle: {
     fontSize: 22,

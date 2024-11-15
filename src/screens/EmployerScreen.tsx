@@ -46,7 +46,6 @@ const mockProgramAnnouncements = [
 ];
 const EmployerSelectionScreen: React.FC = () => {
   const { userProfile } = useUserProfileContext();
-  const { checkInHistory } = useCheckInContext();
   const [employerDetails, setEmployerDetails] = useState(userProfile?.employer);
 
   // Function to fetch employer details from HubSpot
@@ -56,7 +55,7 @@ const EmployerSelectionScreen: React.FC = () => {
       setEmployerDetails(employerData);
     } catch (error) {
       console.error("Error fetching employer details:", error);
-      // Alert.alert("Error", "Could not fetch employer details.");
+      Alert.alert("Error", "Could not fetch employer details.");
     }
   };
 

@@ -64,7 +64,7 @@ const GymSelectionScreen = () => {
     const fetchUserProfile = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) {
-        // Alert.alert("Error", "User not authenticated");
+        Alert.alert("Error", "User not authenticated");
         return;
       }
 
@@ -83,7 +83,7 @@ const GymSelectionScreen = () => {
   const getCurrentLocation = async (): Promise<Address | null> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      // Alert.alert("Permission denied", "Unable to access current location.");
+      Alert.alert("Permission denied", "Unable to access current location.");
       return null;
     }
     const location = await Location.getCurrentPositionAsync({});
@@ -110,7 +110,7 @@ const GymSelectionScreen = () => {
     }
 
     if (!location) {
-      // Alert.alert("Error", "Unable to determine source location.");
+      Alert.alert("Error", "Unable to determine source location.");
       setLoading(false);
       return;
     }
@@ -119,7 +119,7 @@ const GymSelectionScreen = () => {
       setGroupedCompanies(facilities);
     } catch (error) {
       console.error("Error fetching gyms:", error);
-      // Alert.alert("Error", "Could not fetch gyms at this time.");
+      Alert.alert("Error", "Could not fetch gyms at this time.");
     } finally {
       setLoading(false);
     }
@@ -128,14 +128,14 @@ const GymSelectionScreen = () => {
   const handleSelectGym = async (gym: Company) => {
     const uid = auth.currentUser?.uid;
     if (!uid) {
-      // Alert.alert("Error", "User not authenticated");
+      Alert.alert("Error", "User not authenticated");
       return;
     }
 
     try {
       await updateUserProfileWithCompany(uid, gym, "gym");
       await refreshUserProfile();
-      // Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
+      Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
       if (mode === "signup") {
         navigation.navigate("BottomTabs", { screen: "Dashboard" });
       } else {
@@ -143,7 +143,7 @@ const GymSelectionScreen = () => {
       }
     } catch (error) {
       console.error("Error saving selected gym:", error);
-      // Alert.alert("Error", "Unable to save gym selection at this time.");
+      Alert.alert("Error", "Unable to save gym selection at this time.");
     }
   };
 

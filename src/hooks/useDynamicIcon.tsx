@@ -1,5 +1,20 @@
 // src/hooks/useDynamicIcon.ts
 import { useEffect, useState } from "react";
+import AntDesign from "react-native-vector-icons/AntDesign";
+import Entypo from "react-native-vector-icons/Entypo";
+import EvilIcons from "react-native-vector-icons/EvilIcons";
+import Feather from "react-native-vector-icons/Feather";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import FontAwesome6 from "react-native-vector-icons/FontAwesome6";
+import Fontisto from "react-native-vector-icons/Fontisto";
+import Foundation from "react-native-vector-icons/Foundation";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Octicons from "react-native-vector-icons/Octicons";
+import Zocial from "react-native-vector-icons/Zocial";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 
 type IconLibrary =
   | "AntDesign"
@@ -23,35 +38,25 @@ export const useDynamicIcon = (iconLibrary: IconLibrary) => {
     useState<React.ComponentType<any> | null>(null);
 
   useEffect(() => {
-    const loadIconComponent = async () => {
-      const iconLibraries = {
-        AntDesign: () => import("react-native-vector-icons/AntDesign"),
-        Entypo: () => import("react-native-vector-icons/Entypo"),
-        EvilIcons: () => import("react-native-vector-icons/EvilIcons"),
-        Feather: () => import("react-native-vector-icons/Feather"),
-        FontAwesome: () => import("react-native-vector-icons/FontAwesome"),
-        FontAwesome5: () => import("react-native-vector-icons/FontAwesome5"),
-        FontAwesome6: () => import("react-native-vector-icons/FontAwesome6"),
-        Fontisto: () => import("react-native-vector-icons/Fontisto"),
-        Foundation: () => import("react-native-vector-icons/Foundation"),
-        Ionicons: () => import("react-native-vector-icons/Ionicons"),
-        MaterialIcons: () => import("react-native-vector-icons/MaterialIcons"),
-        MaterialCommunityIcons: () =>
-          import("react-native-vector-icons/MaterialCommunityIcons"),
-        Octicons: () => import("react-native-vector-icons/Octicons"),
-        Zocial: () => import("react-native-vector-icons/Zocial"),
-        SimpleLineIcons: () =>
-          import("react-native-vector-icons/SimpleLineIcons"),
-      };
-
-      const iconImport = iconLibraries[iconLibrary];
-      if (iconImport) {
-        const importedLibrary = await iconImport();
-        setIconComponent(() => importedLibrary.default);
-      }
+    const iconLibraries = {
+      AntDesign,
+      Entypo,
+      EvilIcons,
+      Feather,
+      FontAwesome,
+      FontAwesome5,
+      FontAwesome6,
+      Fontisto,
+      Foundation,
+      Ionicons,
+      MaterialIcons,
+      MaterialCommunityIcons,
+      Octicons,
+      Zocial,
+      SimpleLineIcons,
     };
 
-    loadIconComponent();
+    setIconComponent(() => iconLibraries[iconLibrary] || null);
   }, [iconLibrary]);
 
   return IconComponent;

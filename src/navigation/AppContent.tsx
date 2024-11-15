@@ -8,6 +8,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { firestore } from "../services/firebaseConfig";
 import { AppNavigationProp } from "./AppStackParamList";
 import { useFonts } from "expo-font";
+import Gymforce from "../../assets/fonts/VTFRedzone-Classic.ttf";
+import OpenSansGymforce from "../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf";
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -15,8 +17,8 @@ const AppContent = () => {
   const navigation = useNavigation<AppNavigationProp>();
 
   const [fontsLoaded] = useFonts({
-    Gymforce: require("../../assets/fonts/VTFRedzone-Classic.ttf"),
-    OpenSansGymforce: require("../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf"),
+    Gymforce,
+    OpenSansGymforce,
   });
 
   useEffect(() => {
@@ -31,15 +33,22 @@ const AppContent = () => {
 
           // Redirect based on profile completeness
           if (!userData?.address) {
+            console.log("User data is incomplete, redirecting to UserDetails");
             navigation.navigate("UserDetails", { mode: "signup" });
           } else if (!userData?.employer) {
+            console.log(
+              "User data is incomplete, redirecting to EmployerSelection"
+            );
             navigation.navigate("EmployerSelection", { mode: "signup" });
           } else if (!userData?.gym) {
+            console.log("User data is incomplete, redirecting to GymSelection");
             navigation.navigate("GymSelection", { mode: "signup" });
           } else {
+            console.log("User data is complete, redirecting to BottomTabs");
             navigation.navigate("BottomTabs", {});
           }
         } else {
+          console.log("User data does not exist, redirecting to UserDetails");
           navigation.navigate("UserDetails", { mode: "signup" });
         }
       }

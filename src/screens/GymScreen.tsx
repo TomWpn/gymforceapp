@@ -3,16 +3,19 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  ImageBackground,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { useUserProfileContext } from "../context/UserProfileContext";
-import { fetchGymById } from "../services/gymService"; // Import the service function
+import { getGymDetails } from "../services/gymService"; // Import the service function
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Company } from "../types";
+import { Gym } from "../types";
 import GymForceText from "../components/GymForceText";
 import FlexibleSpacer from "../components/FlexibleSpacer";
-import badgeIcon from "../../assets/badge.png";
+import ExpandableText from "../components/ExpandableText";
+import GymHeader from "../components/GymHeader";
+import GymReviewForm from "../components/GymReviewForm";
+import GymForceButton from "../components/GymForceButton";
 
 // Mock data for deals, events, and owner message
 const mockDeals = [
@@ -45,15 +48,24 @@ const mockEvents = [
 
 const GymScreen: React.FC = () => {
   const { userProfile } = useUserProfileContext();
-  const [gymData, setGymData] = useState<Company>();
+  const [gymData, setGymData] = useState<Gym>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const handleRatePress = () => {
+    setModalVisible(true); // Open the modal
+  };
+
+  const closeModal = () => {
+    setModalVisible(false); // Close the modal
+  };
 
   useEffect(() => {
     const fetchLatestGymData = async () => {
       if (userProfile?.gym?.id) {
         try {
-          const data = await fetchGymById(userProfile.gym.id); // Fetch latest data
+          const data = await getGymDetails(userProfile.gym.id); // Fetch latest data
           setGymData(data);
         } catch (err) {
           setError("Failed to load gym information.");
@@ -91,21 +103,12 @@ const GymScreen: React.FC = () => {
       {gymData ? (
         <View>
           {/* Header with Gym Background */}
-          <ImageBackground
-            source={{
-              uri:
-                gymData.properties.app_background_image_url ||
-                "https://gymforce.app/assets/images/badge.png", // Fallback URL
-            }}
-            style={styles.headerBackground}
-          >
-            <View style={styles.headerOverlay} />
-            <View style={styles.gymNameSection}>
-              <GymForceText type="Title" color="#1a265a" fontFamily="Gymforce">
-                {gymData.properties.name}
-              </GymForceText>
-            </View>
-          </ImageBackground>
+          <GymHeader
+            name={gymData.properties?.name!}
+            backgroundImageUrl={gymData.properties.app_background_image_url!}
+            rating={gymData.review?.rating! || 0.63}
+            onRatePress={handleRatePress}
+          />
 
           {/* Owner Message Section */}
           {gymData.properties.owner_blurb && (
@@ -113,15 +116,17 @@ const GymScreen: React.FC = () => {
               <View style={styles.sectionHeader}>
                 <Icon name="account" size={24} color="#ff7f50" />
                 <GymForceText style={styles.sectionTitle}>
-                  Message from the Owner
+                  About the Owner
                 </GymForceText>
               </View>
-              <GymForceText style={styles.sectionContent}>
-                {gymData.properties.owner_blurb}
-              </GymForceText>
+              <ExpandableText
+                htmlContent={gymData.properties.owner_blurb}
+                style={styles.sectionTitle}
+              />
             </View>
           )}
 
+          <FlexibleSpacer top size={8} />
           {/* Upcoming Deals Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -171,6 +176,26 @@ const GymScreen: React.FC = () => {
           No gym information available.
         </GymForceText>
       )}
+
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <GymReviewForm gymId={gymData?.id!} onSuccess={closeModal} />
+            <FlexibleSpacer top size={8} />
+            <GymForceButton
+              variant="tertiary"
+              title="Close"
+              onPress={closeModal}
+              size="small"
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -279,5 +304,32 @@ const styles = StyleSheet.create({
     color: "#888",
     textAlign: "center",
     paddingVertical: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    width: "100%",
+    paddingHorizontal: 16,
+  },
+  modalContent: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    alignItems: "center",
+  },
+  closeButton: {
+    marginTop: 16,
+    backgroundColor: "#007bff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

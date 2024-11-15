@@ -1,42 +1,29 @@
 // src/services/gymService.ts
+import { fetchGymFromHubSpot } from "./hubspotHelper";
+import { getGymFromFirestore, addReviewToFirestore } from "./firebaseHelper";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
-import { Company } from "../types";
 import { Alert, Linking } from "react-native";
+import { GymReview } from "../types";
+
+const getAuthHeaders = async () => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+  const idToken = await user.getIdToken();
+  return { Authorization: `Bearer ${idToken}` };
+};
 
 /**
- * Fetches gyms from the backend within a specified range from a location.
- *
- * This function authenticates the user, sanitizes the location query, and
- * sends a request to the Firebase function endpoint specifically for gym facilities.
- *
- * @param lat - Latitude of the location to search around
- * @param lng - Longitude of the location to search around
- * @param range - Distance range in miles to filter gyms by proximity
- * @returns A grouped list of gym facilities or throws an error if the request fails
+ * Fetches gyms within a specified range of a location.
  */
 export const fetchGyms = async (lat: number, lng: number, range: number) => {
-  // Ensure the user is authenticated
-  const user = auth.currentUser;
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+  const headers = await getAuthHeaders();
 
-  // Get the ID token for the authenticated user
-  const idToken = await user.getIdToken();
-
-  // Construct and send the request
   try {
     const response = await axios.get(
       `${process.env.FIREBASE_FUNCTION_HOST_URL}/getNearbyFacilitiesSecondGen?lat=${lat}&lng=${lng}&range=${range}`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`, // Include ID token in the request headers
-        },
-      }
+      { headers }
     );
-    console.log("Response from Firebase function:", response.data.facilities);
-    // Return the grouped list of gym facilities
     return response.data.facilities;
   } catch (error: any) {
     console.error("Error fetching gyms:", error?.response?.data || error);
@@ -44,9 +31,12 @@ export const fetchGyms = async (lat: number, lng: number, range: number) => {
   }
 };
 
-export const handleOpenMap = (gym: Company) => {
+/**
+ * Opens Google Maps to the gym's location.
+ */
+export const handleOpenMap = (gym: any) => {
   if (!gym?.properties.address || !gym?.properties.city) {
-    // Alert.alert("Location unavailable", "No address found for this gym.");
+    Alert.alert("Location unavailable", "No address found for this gym.");
     return;
   }
 
@@ -60,40 +50,40 @@ export const handleOpenMap = (gym: Company) => {
       if (supported) {
         Linking.openURL(url);
       } else {
-        // Alert.alert("Error", "Unable to open the maps app.");
+        Alert.alert("Error", "Unable to open the maps app.");
       }
     })
     .catch((err) => console.error("Error opening map:", err));
 };
 
 /**
- * Fetches gym details from Firebase by gym ID.
- * @param companyId - The ID of the gym (HubSpot company ID).
- * @returns The latest gym data from HubSpot.
+ * Fetches and combines gym data from Firestore and HubSpot.
+ * @param gymId - The ID of the gym.
+ * @returns Combined gym data with Firestore and HubSpot fields.
  */
-export const fetchGymById = async (companyId: string) => {
-  const user = auth.currentUser;
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
+export const getGymDetails = async (gymId: string) => {
+  const [firestoreData, hubSpotData] = await Promise.all([
+    getGymFromFirestore(gymId),
+    fetchGymFromHubSpot(gymId),
+  ]);
 
-  const idToken = await user.getIdToken();
-  try {
-    const response = await axios.get(
-      `${process.env.FIREBASE_FUNCTION_HOST_URL}/getCompanyByIdSecondGen?companyId=${companyId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    );
+  // Merge Firestore and HubSpot data, prioritizing HubSpot data where applicable
+  const combinedData = {
+    ...firestoreData,
+    ...hubSpotData,
+  };
+  console.log("Combined Data:", combinedData);
+  return combinedData;
+};
 
-    return response.data.company;
-  } catch (error: any) {
-    console.error(
-      "Error fetching gym data from HubSpot:",
-      error?.response?.data || error
-    );
-    throw new Error("Failed to fetch gym data.");
-  }
+/**
+ * Adds a review to Firestore for the specified gym.
+ * @param gymId - The ID of the gym.
+ * @param userId - The ID of the user submitting the review.
+ * @param rating - The rating given by the user.
+ * @param comment - Comment provided by the user.
+ * @param ownerNote - Optional note to the gym owner.
+ */
+export const addGymReview = async (reviewData: GymReview) => {
+  await addReviewToFirestore(reviewData);
 };

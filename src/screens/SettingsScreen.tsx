@@ -11,10 +11,10 @@ const SettingsScreen: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      // alert("Signed out successfully!");
+      alert("Signed out successfully!");
     } catch (error) {
       console.error("Error signing out:", error);
-      // alert("Unable to sign out at this time.");
+      alert("Unable to sign out at this time.");
     }
   };
 

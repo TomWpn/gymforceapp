@@ -37,13 +37,13 @@ const GymCard: React.FC<{ showCheckIn?: boolean }> = ({
       if (uid && gymId) {
         await logCheckIn(uid, gymId, gym.properties.name!);
         await fetchCheckInHistory();
-        // alert("Check-in successful!");
+        alert("Check-in successful!");
       } else {
-        // alert("User or Gym information is missing.");
+        alert("User or Gym information is missing.");
       }
     } catch (error) {
       console.error("Error checking in:", error);
-      // alert("Unable to check in at this time.");
+      alert("Unable to check in at this time.");
     }
   };
 

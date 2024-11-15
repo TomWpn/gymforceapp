@@ -3,6 +3,7 @@ import { defineString } from "firebase-functions/params";
 import { GroupedCompanies } from "../types/gymforce";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "./googleService";
+import { Company } from "../types/Hubspot";
 
 const HUBSPOT_OAUTH_ACCESS_TOKEN = defineString("HUBSPOT_OAUTH_ACCESS_TOKEN");
 const HUBSPOT_BASE_URL = "https://api.hubapi.com/crm/v3/objects/companies";
@@ -93,24 +94,30 @@ export const searchEmployersInHubSpot = async (query: string) => {
 
     // Process employers: geocode and update if missing lat/lng
     const employers = await Promise.all(
-      response.data.results.map(async (employer: any) => {
-        let { lat, lng } = employer.properties;
+      response.data.results.map(
+        async (employer: Company & { lat?: number; lng?: number }) => {
+          let { lat, lng } = employer.properties;
 
-        if (!lat || !lng) {
-          const fullAddress = `${employer.properties.address}, ${employer.properties.city}, ${employer.properties.state}`;
-          const coordinates = await geocodeAddress(fullAddress);
-          if (coordinates) {
-            lat = coordinates.lat;
-            lng = coordinates.lng;
-            await updateCompanyCoordinates(employer.id, lat, lng); // Update HubSpot with lat/lng
+          if (!lat || !lng) {
+            const fullAddress = `${employer.properties.address}, ${employer.properties.city}, ${employer.properties.state}`;
+            const coordinates = await geocodeAddress(fullAddress);
+            if (coordinates) {
+              lat = coordinates.lat;
+              lng = coordinates.lng;
+              await updateCompanyCoordinates(
+                employer.id,
+                parseFloat(lat!),
+                parseFloat(lng!)
+              ); // Update HubSpot with lat/lng
+            }
           }
-        }
 
-        return {
-          ...employer,
-          properties: { ...employer.properties, lat, lng },
-        };
-      })
+          return {
+            ...employer,
+            properties: { ...employer.properties, lat, lng },
+          };
+        }
+      )
     );
 
     return employers;
@@ -126,7 +133,12 @@ export const getFacilitiesFromHubSpot = async (
   range: number
 ): Promise<GroupedCompanies> => {
   const filterGroups = [
-    { filters: [{ propertyName: "type", operator: "EQ", value: "FACILITY" }] },
+    {
+      filters: [
+        { propertyName: "type", operator: "EQ", value: "FACILITY" },
+        { propertyName: "lifecyclestage", operator: "EQ", value: "97079970" },
+      ],
+    },
   ];
 
   try {
@@ -138,7 +150,7 @@ export const getFacilitiesFromHubSpot = async (
     );
 
     const companies = await Promise.all(
-      response.data.results.map(async (company: any) => {
+      response.data.results.map(async (company: Company) => {
         let { lat, lng } = company.properties;
 
         if (!lat || !lng) {
@@ -147,14 +159,23 @@ export const getFacilitiesFromHubSpot = async (
           if (coordinates) {
             lat = coordinates.lat;
             lng = coordinates.lng;
-            await updateCompanyCoordinates(company.id, lat, lng);
+            await updateCompanyCoordinates(
+              company.id,
+              parseFloat(lat!),
+              parseFloat(lng!)
+            );
           }
         }
 
         return {
           ...company,
           distance:
-            lat && lng ? calculateDistance(location, { lat, lng }) : Infinity,
+            lat && lng
+              ? calculateDistance(location, {
+                  lat: parseFloat(lat!),
+                  lng: parseFloat(lng!),
+                })
+              : Infinity,
         };
       })
     );

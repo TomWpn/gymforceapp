@@ -23,6 +23,7 @@ import NoMarginView from "../components/NoMarginView";
 import GymForceText from "../components/GymForceText";
 import Padding from "../components/Padding";
 import FlexibleSpacer from "../components/FlexibleSpacer";
+import { useUserProfileContext } from "../context/UserProfileContext";
 
 type EmployerSelectionScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -37,6 +38,7 @@ type EmployerSelectionScreenRouteProp = RouteProp<
 const EmployerSelectionScreen = () => {
   const navigation = useNavigation<EmployerSelectionScreenNavigationProp>();
   const route = useRoute<EmployerSelectionScreenRouteProp>();
+  const { refreshUserProfile } = useUserProfileContext();
   const { mode } = route.params || {}; // mode can be "signup" or "edit"
 
   const [query, setQuery] = useState("");
@@ -59,7 +61,7 @@ const EmployerSelectionScreen = () => {
         setEmployers(results || []);
       } catch (error) {
         console.error("Error searching for employers:", error);
-        // Alert.alert("Error", "Unable to search for employers at this time.");
+        Alert.alert("Error", "Unable to search for employers at this time.");
       } finally {
         setLoading(false);
         setSearched(true);
@@ -73,7 +75,8 @@ const EmployerSelectionScreen = () => {
       if (!uid) throw new Error("User not authenticated");
 
       await updateUserProfileWithCompany(uid, employer, "employer");
-      // Alert.alert("Success", `Selected employer: ${employer.properties.name}`);
+      await refreshUserProfile(); // Function to refresh user profile data
+      Alert.alert("Success", `Selected employer: ${employer.properties.name}`);
 
       if (mode === "signup") {
         navigation.navigate("GymSelection", { mode: "signup" });
@@ -82,7 +85,7 @@ const EmployerSelectionScreen = () => {
       }
     } catch (error) {
       console.error("Error saving selected employer:", error);
-      // Alert.alert("Error", "Unable to save employer at this time.");
+      Alert.alert("Error", "Unable to save employer at this time.");
     }
   };
 
