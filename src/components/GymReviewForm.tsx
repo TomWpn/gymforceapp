@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,11 +7,10 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { addGymReview } from "../services/gymService"; // Adjust path to your addGymReview function
+import { addGymReview, getUserReview } from "../services/gymService"; // Updated service imports
 import { Ionicons } from "@expo/vector-icons"; // Assuming you're using Expo; adjust if needed
-import { useUserProfileContext } from "../context/UserProfileContext";
-import GymForceButton from "./GymForceButton";
 import { auth } from "../services/firebaseConfig";
+import GymForceButton from "./GymForceButton";
 
 const GymReviewForm = ({
   gymId,
@@ -23,6 +22,34 @@ const GymReviewForm = ({
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [ownerNote, setOwnerNote] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch existing review on mount
+    const fetchReview = async () => {
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        Alert.alert("Error", "User is not logged in.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const review = await getUserReview(gymId, userId);
+        if (review) {
+          setRating(review.rating || 0);
+          setComment(review.comment || "");
+          setOwnerNote(review.ownerNote || "");
+        }
+      } catch (error) {
+        console.error("Error fetching user review:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReview();
+  }, [gymId]);
 
   const handleSubmit = async () => {
     if (!rating || rating < 1 || rating > 5) {
@@ -30,21 +57,28 @@ const GymReviewForm = ({
       return;
     }
 
-    const addGymReviewProps = {
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      Alert.alert("Error", "User is not logged in.");
+      return;
+    }
+
+    const reviewData = {
       gymId,
-      userId: auth.currentUser?.uid!,
+      userId,
       rating,
       comment,
       ownerNote,
     };
-    console.log("Review Submission Data:", addGymReviewProps);
+
+    console.log("Submitting Review:", reviewData);
 
     try {
-      await addGymReview(addGymReviewProps);
+      await addGymReview(reviewData);
       Alert.alert("Review Submitted", "Thank you for your review!");
       onSuccess();
     } catch (error) {
-      console.error("Error adding review: ", error);
+      console.error("Error submitting review:", error);
       Alert.alert(
         "Submission Error",
         "Failed to submit your review. Please try again."
@@ -64,6 +98,14 @@ const GymReviewForm = ({
     ));
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading your review...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Leave a Review</Text>
@@ -75,7 +117,7 @@ const GymReviewForm = ({
       <TextInput
         style={[styles.input, styles.textArea]}
         value={comment}
-        onChangeText={(value) => setComment(value)}
+        onChangeText={setComment}
         placeholder="Write a comment..."
         multiline
       />
@@ -84,14 +126,14 @@ const GymReviewForm = ({
       <TextInput
         style={[styles.input, styles.textArea]}
         value={ownerNote}
-        onChangeText={(value) => setOwnerNote(value)}
+        onChangeText={setOwnerNote}
         placeholder="Write a note to the gym owner..."
         multiline
       />
 
       <GymForceButton
         title="Submit Review"
-        onPress={() => handleSubmit()}
+        onPress={handleSubmit}
         size="large"
         fullWidth
       />
@@ -134,17 +176,14 @@ const styles = StyleSheet.create({
     height: 80,
     textAlignVertical: "top",
   },
-  submitButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 12,
-    borderRadius: 8,
+  loadingContainer: {
+    padding: 8,
     alignItems: "center",
-    marginTop: 16,
+    justifyContent: "center",
   },
-  submitButtonText: {
-    color: "#fff",
+  loadingText: {
     fontSize: 16,
-    fontWeight: "bold",
+    color: "#555",
   },
 });
 

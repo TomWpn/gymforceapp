@@ -1,6 +1,9 @@
-// src/services/gymService.ts
 import { fetchGymFromHubSpot } from "./hubspotHelper";
-import { getGymFromFirestore, addReviewToFirestore } from "./firebaseHelper";
+import {
+  getGymFromFirestore,
+  addOrUpdateReviewToFirestore,
+  getUserReviewFromFirestore,
+} from "./firebaseHelper";
 import axios from "axios";
 import { auth } from "./firebaseConfig";
 import { Alert, Linking } from "react-native";
@@ -77,13 +80,35 @@ export const getGymDetails = async (gymId: string) => {
 };
 
 /**
- * Adds a review to Firestore for the specified gym.
+ * Fetches a user's existing review for a gym.
  * @param gymId - The ID of the gym.
- * @param userId - The ID of the user submitting the review.
- * @param rating - The rating given by the user.
- * @param comment - Comment provided by the user.
- * @param ownerNote - Optional note to the gym owner.
+ * @param userId - The ID of the user.
+ * @returns The user's review if it exists; otherwise, null.
+ */
+export const getUserReview = async (gymId: string, userId: string) => {
+  try {
+    const review = await getUserReviewFromFirestore(gymId, userId);
+    console.log("Fetched User Review:", review);
+    return review;
+  } catch (error) {
+    console.error(
+      `Error fetching user review for gymId: ${gymId}, userId: ${userId}`,
+      error
+    );
+    throw new Error("Failed to fetch user review.");
+  }
+};
+
+/**
+ * Adds or updates a review for a gym.
+ * @param reviewData - The review data, including gymId, userId, rating, comment, and ownerNote.
  */
 export const addGymReview = async (reviewData: GymReview) => {
-  await addReviewToFirestore(reviewData);
+  try {
+    await addOrUpdateReviewToFirestore(reviewData);
+    console.log("Review added or updated successfully:", reviewData);
+  } catch (error) {
+    console.error("Error adding or updating review:", error);
+    throw new Error("Failed to add or update review.");
+  }
 };

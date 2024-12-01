@@ -16,6 +16,10 @@ import ExpandableText from "../components/ExpandableText";
 import GymHeader from "../components/GymHeader";
 import GymReviewForm from "../components/GymReviewForm";
 import GymForceButton from "../components/GymForceButton";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { AppStackParamList } from "../navigation/AppStackParamList";
+import { useGymData } from "../hooks/useGymData";
 
 // Mock data for deals, events, and owner message
 const mockDeals = [
@@ -46,12 +50,26 @@ const mockEvents = [
   },
 ];
 
+type GymScreenNavigationProp = StackNavigationProp<
+  AppStackParamList,
+  "GymReviews"
+>;
+
 const GymScreen: React.FC = () => {
   const { userProfile } = useUserProfileContext();
-  const [gymData, setGymData] = useState<Gym>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
+
+  const gymId = userProfile?.gym?.id ?? null;
+
+  const { gymData, loading, error, fetchGymData } = useGymData(gymId);
+
+  const navigation = useNavigation<GymScreenNavigationProp>(); // Hook for navigation
+
+  const handleViewReviews = () => {
+    if (gymData?.id) {
+      navigation.navigate("GymReviews", { gymId: gymData.id }); // Navigate to GymReviewsScreen with gymId
+    }
+  };
 
   const handleRatePress = () => {
     setModalVisible(true); // Open the modal
@@ -62,24 +80,7 @@ const GymScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchLatestGymData = async () => {
-      if (userProfile?.gym?.id) {
-        try {
-          const data = await getGymDetails(userProfile.gym.id); // Fetch latest data
-          setGymData(data);
-        } catch (err) {
-          setError("Failed to load gym information.");
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-        setError("No gym selected.");
-      }
-    };
-
-    fetchLatestGymData();
+    fetchGymData();
   }, [userProfile?.gym?.id]);
 
   if (loading) {
@@ -106,10 +107,12 @@ const GymScreen: React.FC = () => {
           <GymHeader
             name={gymData.properties?.name!}
             backgroundImageUrl={gymData.properties.app_background_image_url!}
-            rating={gymData.review?.rating! || 0.63}
+            rating={gymData.averageRating || 0}
+            totalReviews={gymData.totalReviews || 0}
             onRatePress={handleRatePress}
           />
 
+          <FlexibleSpacer top size={16} />
           {/* Owner Message Section */}
           {gymData.properties.owner_blurb && (
             <View style={styles.section}>

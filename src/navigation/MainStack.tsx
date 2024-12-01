@@ -6,6 +6,7 @@ import UserDetailsScreen from "../screens/UserDetailsScreen";
 import EmployerSelectionScreen from "../screens/EmployerSelectionScreen";
 import GymSelectionScreen from "../screens/GymSelectionScreen";
 import BottomTabs from "../components/BottomTabs";
+import GymReviewsScreen from "../screens/GymReviewsScreen";
 
 const Stack = createStackNavigator<AppStackParamList>();
 
@@ -34,6 +35,11 @@ const MainStack = () => (
       component={GymSelectionScreen}
       options={{ title: "Select Gym" }}
     />
+    {/* <Stack.Screen
+      name="GymReviews"
+      component={GymReviewsScreen}
+      options={{ title: "Gym Reviews" }}
+    /> */}
   </Stack.Navigator>
 );
 

@@ -68,4 +68,7 @@ export interface GymReview {
 
 export type Gym = Company & {
   review: GymReview;
+  averageRating: number;
+  reviews: GymReview[];
+  totalReviews: number;
 };

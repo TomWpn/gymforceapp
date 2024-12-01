@@ -15,6 +15,7 @@ interface GymHeaderProps {
   backgroundImageUrl?: string;
   defaultImageUrl?: string;
   rating?: number; // Gym rating (optional)
+  totalReviews?: number; // Total number of reviews
   style?: StyleProp<ViewStyle>; // Customizable styles for the header container
   onRatePress?: () => void; // Optional handler when the rating is pressed
 }
@@ -23,15 +24,14 @@ const GymHeader: React.FC<GymHeaderProps> = ({
   name,
   backgroundImageUrl,
   defaultImageUrl = "https://gymforce.app/assets/images/badge.png",
-  rating,
+  rating = 0,
+  totalReviews = 0,
   style,
   onRatePress,
 }) => {
   const renderStars = () => {
-    const fullStars = Math.floor(rating || 0); // Number of full stars
-    const hasHalfStar = rating
-      ? rating % 1 >= 0.25 && rating % 1 < 0.75
-      : false; // Check for half-star
+    const fullStars = Math.floor(rating); // Number of full stars
+    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75; // Check for half-star
 
     return Array.from({ length: 5 }, (_, index) => {
       if (index < fullStars) {
@@ -65,7 +65,21 @@ const GymHeader: React.FC<GymHeaderProps> = ({
         </GymForceText>
 
         <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
-          {renderStars()}
+          {/* <View style={styles.starsRow}>{renderStars()}</View> */}
+          <GymForceText
+            type="Subtitle"
+            color="#1a265a"
+            fontFamily="Gymforce"
+            style={styles.ratingText}
+          >
+            {rating.toFixed(1)} ({totalReviews} reviews)
+          </GymForceText>
+          <GymForceText
+            type="Subtitle"
+            color="#1a265a"
+            fontFamily="Gymforce"
+            style={styles.ratingText}
+          />
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -74,35 +88,44 @@ const GymHeader: React.FC<GymHeaderProps> = ({
 
 const styles = StyleSheet.create({
   headerBackground: {
-    height: 150,
-    justifyContent: "center",
+    height: 200,
+    justifyContent: "flex-end",
     alignItems: "center",
-    marginBottom: 20,
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.3)", // Overlay with transparency
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Overlay with transparency
   },
   headerContent: {
-    marginHorizontal: 20,
-    padding: 35,
-    backgroundColor: "#ffffff",
+    padding: 16,
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 5, // Shadow for Android
+    margin: "auto",
   },
   gymName: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#000000",
+    textAlign: "center",
   },
   ratingContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    marginTop: 12,
+  },
+  starsRow: {
     flexDirection: "row",
-    marginTop: 8,
-    margin: "auto",
+    justifyContent: "center",
+  },
+  ratingText: {
+    fontSize: 16,
+    marginTop: 4,
+    textAlign: "center",
   },
 });
 

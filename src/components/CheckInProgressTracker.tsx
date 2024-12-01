@@ -8,7 +8,7 @@ const CheckInProgressTracker: React.FC = () => {
   const { totalCheckInCount } = useCheckInContext();
 
   // Assuming a milestone goal; can be adjusted based on app requirements
-  const milestoneGoal = 30;
+  const milestoneGoal = 50;
   const progress = Math.min(totalCheckInCount / milestoneGoal, 1); // Progress as a fraction
 
   // Determine progress state
