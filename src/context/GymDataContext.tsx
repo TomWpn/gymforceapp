@@ -1,15 +1,9 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { getGymDetails } from "../services/gymService"; // Adjust the path
-
-type GymData = {
-  id: string;
-  name: string;
-  location: string;
-  // Add other properties
-};
+import { Gym } from "../types";
 
 type GymDataContextType = {
-  gymData: GymData | null;
+  gymData: Gym | null;
   loading: boolean;
   error: string | null;
   fetchGymData: (gymId: string) => Promise<void>;
@@ -17,8 +11,10 @@ type GymDataContextType = {
 
 const GymDataContext = createContext<GymDataContextType | undefined>(undefined);
 
-export const GymDataProvider: React.FC = ({ children }) => {
-  const [gymData, setGymData] = useState<GymData | null>(null);
+export const GymDataProvider: React.FC = ({
+  children,
+}: React.PropsWithChildren) => {
+  const [gymData, setGymData] = useState<Gym | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

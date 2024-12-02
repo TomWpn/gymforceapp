@@ -8,8 +8,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { firestore } from "../services/firebaseConfig";
 import { AppNavigationProp } from "./AppStackParamList";
 import { useFonts } from "expo-font";
-import Gymforce from "../../assets/fonts/VTFRedzone-Classic.ttf";
-import OpenSansGymforce from "../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf";
+// import Gymforce from "../../assets/fonts/VTFRedzone-Classic.ttf";
+// import OpenSansGymforce from "../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf";
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -17,8 +17,8 @@ const AppContent = () => {
   const navigation = useNavigation<AppNavigationProp>();
 
   const [fontsLoaded] = useFonts({
-    Gymforce,
-    OpenSansGymforce,
+    Gymforce: require("../../assets/fonts/VTFRedzone-Classic.ttf"),
+    OpenSansGymforce: require("../../assets/fonts/OpenSans-VariableFont_wdth,wght.ttf"),
   });
 
   useEffect(() => {

@@ -7,9 +7,7 @@ import {
   Modal,
 } from "react-native";
 import { useUserProfileContext } from "../context/UserProfileContext";
-import { getGymDetails } from "../services/gymService"; // Import the service function
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Gym } from "../types";
 import GymForceText from "../components/GymForceText";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import ExpandableText from "../components/ExpandableText";

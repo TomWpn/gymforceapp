@@ -65,7 +65,7 @@ const GymHeader: React.FC<GymHeaderProps> = ({
         </GymForceText>
 
         <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
-          {/* <View style={styles.starsRow}>{renderStars()}</View> */}
+          <View style={styles.starsRow}>{renderStars()}</View>
           <GymForceText
             type="Subtitle"
             color="#1a265a"
