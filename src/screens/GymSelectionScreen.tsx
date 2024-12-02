@@ -21,12 +21,13 @@ import {
 } from "../services/userProfileService";
 import { auth } from "../services/firebaseConfig";
 import Slider from "@react-native-community/slider";
-import { Address, GroupedCompanies, Company } from "../types";
+import { Address, GroupedCompanies, Company, Gym } from "../types";
 import GymForceButton from "../components/GymForceButton";
 import NoMarginView from "../components/NoMarginView";
 import GymForceText from "../components/GymForceText";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import { useUserProfileContext } from "../context/UserProfileContext";
+import SuggestGymList from "../components/SuggestGymList";
 
 type GymSelectionRouteProp = RouteProp<AppStackParamList, "GymSelection">;
 type GymSelectionNavigationProp = StackNavigationProp<
@@ -53,6 +54,7 @@ const GymSelectionScreen = () => {
     lng: number;
   } | null>(null);
   const [homeAddress, setHomeAddress] = useState<Address | null>(null);
+  const [nonNetworkGyms, setNonNetworkGyms] = useState<Gym[]>([]);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -116,6 +118,7 @@ const GymSelectionScreen = () => {
     }
     try {
       const facilities = await fetchGyms(location.lat, location.lng, range);
+      await fetchNonNetworkGyms();
       setGroupedCompanies(facilities);
     } catch (error) {
       console.error("Error fetching gyms:", error);
@@ -123,6 +126,23 @@ const GymSelectionScreen = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchNonNetworkGyms = async () => {
+    const offNetworkGyms = [
+      {
+        id: "off-1",
+        properties: { name: "Example Gym" },
+        distance: 5.0,
+      },
+      {
+        id: "off-2",
+        properties: { name: "Another Gym" },
+        distance: 8.5,
+      },
+    ] as unknown as Gym[];
+
+    setNonNetworkGyms(offNetworkGyms);
   };
 
   const handleSelectGym = async (gym: Company) => {
@@ -263,6 +283,10 @@ const GymSelectionScreen = () => {
                   </View>
                 ))}
               </NoMarginView>
+            )}
+
+            {!loading && nonNetworkGyms.length > 0 && (
+              <SuggestGymList gyms={nonNetworkGyms} onSuggestGym={() => {}} />
             )}
           </NoMarginView>
         </ScrollView>
