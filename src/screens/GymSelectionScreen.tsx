@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  ScrollView,
-  FlatList,
+  SectionList,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   View,
   ImageBackground,
 } from "react-native";
@@ -20,14 +17,14 @@ import {
   updateUserProfileWithCompany,
 } from "../services/userProfileService";
 import { auth } from "../services/firebaseConfig";
-import Slider from "@react-native-community/slider";
+// import Slider from "@react-native-community/slider";
 import { Address, GroupedCompanies, Company, Gym } from "../types";
 import GymForceButton from "../components/GymForceButton";
-import NoMarginView from "../components/NoMarginView";
 import GymForceText from "../components/GymForceText";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import { useUserProfileContext } from "../context/UserProfileContext";
-import SuggestGymList from "../components/SuggestGymList";
+import NoMarginView from "../components/NoMarginView";
+import Padding from "../components/Padding";
 
 type GymSelectionRouteProp = RouteProp<AppStackParamList, "GymSelection">;
 type GymSelectionNavigationProp = StackNavigationProp<
@@ -44,23 +41,17 @@ const GymSelectionScreen = () => {
   const [sourceLocation, setSourceLocation] = useState<
     "employer" | "home" | "current"
   >("home");
-  const [range, setRange] = useState(10);
+  const [range, setRange] = useState(20);
   const [groupedCompanies, setGroupedCompanies] = useState<GroupedCompanies>(
     {}
   );
+  const [nonNetworkGyms, setNonNetworkGyms] = useState<Gym[]>([]);
   const [loading, setLoading] = useState(false);
   const [employerCoordinates, setEmployerCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
   const [homeAddress, setHomeAddress] = useState<Address | null>(null);
-  const [nonNetworkGyms, setNonNetworkGyms] = useState<Gym[]>([]);
-
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: mode !== "signup",
-    });
-  }, [navigation, mode]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -116,6 +107,7 @@ const GymSelectionScreen = () => {
       setLoading(false);
       return;
     }
+
     try {
       const facilities = await fetchGyms(location.lat, location.lng, range);
       await fetchNonNetworkGyms();
@@ -167,23 +159,68 @@ const GymSelectionScreen = () => {
     }
   };
 
+  const sections = [
+    // Create a section for each group in groupedCompanies
+    ...Object.keys(groupedCompanies).map((key) => ({
+      title: key, // Use the key as the section title
+      data: groupedCompanies[key], // Data is the array of gyms in this group
+      isOnNetwork: true, // Set this to true for gyms in the network
+    })),
+    {
+      title: "Non - Network Gyms",
+      subtitle:
+        "If you'd like to join a gym that is not in the network, please select it here. You will not be able to earn rewards at these gyms.",
+      data: nonNetworkGyms, // Add suggested gyms as a separate section
+      isOnNetwork: false, // Set this to false for gyms not in the network
+    },
+  ];
+
+  const renderSectionHeader = ({
+    section: { title, isOnNetwork, subtitle },
+  }: any) =>
+    !loading && Object.keys(groupedCompanies).length > 0 ? (
+      <>
+        {!isOnNetwork && <FlexibleSpacer size={32} top />}
+        <GymForceText type="Title" color={isOnNetwork ? "#f1600d" : "#1a265a"}>
+          {title}
+        </GymForceText>
+        {}
+      </>
+    ) : null;
+
+  const renderGymItem = ({ item }: { item: Company | Gym }) =>
+    !loading ? (
+      <TouchableOpacity
+        style={styles.gymCard}
+        onPress={() => handleSelectGym(item as Company)}
+      >
+        <ImageBackground
+          source={require("../../assets/badge.png")}
+          style={styles.background}
+        >
+          <GymForceText type="Subtitle" color="#1a265a">
+            {item.properties.name}
+          </GymForceText>
+          <GymForceText type="Note" color="#666666">
+            {item.distance.toFixed(2)} miles from your selected location
+          </GymForceText>
+        </ImageBackground>
+      </TouchableOpacity>
+    ) : null;
+
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardAvoidingContainer}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <NoMarginView style={styles.container}>
       <ImageBackground
         source={{ uri: "https://gymforce.app/assets/images/kettlebell.jpeg" }}
         style={styles.background}
       >
         <View style={styles.overlay} />
-        {mode === "signup" && <FlexibleSpacer top size={32} />}
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <NoMarginView style={styles.container}>
+
+        <NoMarginView>
+          <Padding size={20}>
             <GymForceText type="Title" color="#1a265a">
               Find Your Perfect Gym
             </GymForceText>
-
             <GymForceText
               type="Subtitle"
               color="#1a265a"
@@ -191,7 +228,6 @@ const GymSelectionScreen = () => {
             >
               Choose the location you'd like to search from:
             </GymForceText>
-
             <View style={styles.pillContainer}>
               {["employer", "home", "current"].map((loc) => (
                 <TouchableOpacity
@@ -217,8 +253,7 @@ const GymSelectionScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
-
-            <GymForceText type="Subtitle" color="#1a265a">
+            {/* <GymForceText type="Subtitle" color="#1a265a">
               Adjust Your Search Range: {range} miles
             </GymForceText>
             <Slider
@@ -228,94 +263,53 @@ const GymSelectionScreen = () => {
               step={1}
               value={range}
               onValueChange={(value) => setRange(value)}
+            /> */}
+            <FlexibleSpacer bottom size={16} />
+            <GymForceButton
+              fullWidth
+              title="Search Gyms"
+              onPress={fetchNearbyGyms}
             />
-            <GymForceButton title="Search Gyms" onPress={fetchNearbyGyms} />
-
             <FlexibleSpacer bottom size={16} />
             {loading && (
               <GymForceText color="#1a265a">
                 Finding nearby gyms...
               </GymForceText>
             )}
-
-            {!loading && Object.keys(groupedCompanies).length > 0 && (
-              <NoMarginView>
-                <GymForceText
-                  type="Tagline"
-                  color="#1a265a"
-                  style={styles.sectionTitle}
-                >
-                  Select a Gym Near You
-                </GymForceText>
-                {Object.keys(groupedCompanies).map((categoryKey) => (
-                  <View key={categoryKey} style={styles.groupContainer}>
-                    <GymForceText type="Subtitle" color="#f1600d">
-                      {categoryKey === "Functional Fitness"
-                        ? "Functional Fitness Gyms"
-                        : categoryKey === "HEALTH_WELLNESS_AND_FITNESS"
-                        ? "Health, Wellness, and Fitness"
-                        : categoryKey === "LEISURE_TRAVEL_TOURISM"
-                        ? "Leisure, Travel, and Tourism"
-                        : categoryKey === "Martial Arts"
-                        ? "Martial Arts Centers"
-                        : "Other Gyms"}
-                    </GymForceText>
-                    <FlatList
-                      data={groupedCompanies[categoryKey]}
-                      keyExtractor={(item) => item.id}
-                      renderItem={({ item }) => (
-                        <TouchableOpacity
-                          style={styles.gymCard}
-                          onPress={() => handleSelectGym(item)}
-                        >
-                          <GymForceText type="Subtitle" color="#1a265a">
-                            {item.properties.name}
-                          </GymForceText>
-                          <GymForceText type="Note" color="#666666">
-                            {item.distance.toFixed(2)} miles from your selected
-                            location
-                          </GymForceText>
-                        </TouchableOpacity>
-                      )}
-                      scrollEnabled={false} // Disable scrolling within each FlatList to avoid nested scroll conflicts
-                      contentContainerStyle={styles.flatListContainer}
-                    />
-                  </View>
-                ))}
-              </NoMarginView>
-            )}
-
-            {!loading && nonNetworkGyms.length > 0 && (
-              <SuggestGymList gyms={nonNetworkGyms} onSuggestGym={() => {}} />
-            )}
-          </NoMarginView>
-        </ScrollView>
+          </Padding>
+        </NoMarginView>
+        <SectionList
+          sections={sections}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          renderItem={renderGymItem}
+          renderSectionHeader={renderSectionHeader}
+          contentContainerStyle={styles.sectionListContainer}
+        />
       </ImageBackground>
-    </KeyboardAvoidingView>
+    </NoMarginView>
   );
 };
 
 export default GymSelectionScreen;
 
 const styles = StyleSheet.create({
-  keyboardAvoidingContainer: {
+  container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
   },
   background: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    width: "100%",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
-  },
-  scrollContent: {
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  container: {
-    width: "100%",
   },
   subText: {
     marginVertical: 10,
@@ -357,18 +351,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  sectionTitle: {
-    marginVertical: 10,
-    textAlign: "center",
-  },
-  groupContainer: {
-    marginBottom: 20,
-  },
-  categoryTitle: {
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  flatListContainer: {
+  sectionListContainer: {
     paddingVertical: 10,
+    paddingBottom: 100,
   },
 });
