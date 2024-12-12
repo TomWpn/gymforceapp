@@ -82,8 +82,7 @@ const EmployerSelectionScreen: React.FC = () => {
           </GymForceText>
         )}
       </View>
-
-      {/* Wellness Program Benefits Section */}
+      {/* Wellness Program Benefits Section
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Icon name="heart-circle" size={24} color="#f1600d" />
@@ -101,9 +100,8 @@ const EmployerSelectionScreen: React.FC = () => {
             </GymForceText>
           </View>
         ))}
-      </View>
-
-      {/* Program Announcements Section */}
+      </View> */}
+      {/* Program Announcements Section
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Icon name="bullhorn-outline" size={24} color="#f1600d" />
@@ -124,10 +122,9 @@ const EmployerSelectionScreen: React.FC = () => {
             </GymForceText>
           </View>
         ))}
-      </View>
-
+      </View> */}
       {/* Wellness Milestones Section */}
-      <View style={styles.section}>
+      {/* <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Icon name="medal" size={24} color="#f1600d" />
           <GymForceText style={styles.sectionTitle}>
@@ -135,7 +132,7 @@ const EmployerSelectionScreen: React.FC = () => {
           </GymForceText>
         </View>
         <CheckInProgressTracker />
-      </View>
+      </View> */}
     </ScrollView>
   );
 };

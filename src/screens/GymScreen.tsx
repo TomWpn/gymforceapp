@@ -129,7 +129,7 @@ const GymScreen: React.FC = () => {
 
           <FlexibleSpacer top size={8} />
           {/* Upcoming Deals Section */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Icon name="tag-heart" size={24} color="#ff7f50" />
               <GymForceText style={styles.sectionTitle}>
@@ -146,11 +146,11 @@ const GymScreen: React.FC = () => {
                 </GymForceText>
               </View>
             ))}
-          </View>
+          </View> */}
 
           <FlexibleSpacer top size={8} />
           {/* Upcoming Events Section */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Icon name="calendar-star" size={24} color="#ff7f50" />
               <GymForceText style={styles.sectionTitle}>
@@ -170,7 +170,7 @@ const GymScreen: React.FC = () => {
                 </GymForceText>
               </View>
             ))}
-          </View>
+          </View> */}
         </View>
       ) : (
         <GymForceText style={styles.noData}>

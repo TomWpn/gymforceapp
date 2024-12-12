@@ -6,12 +6,13 @@ import {
   Alert,
   View,
   ImageBackground,
+  Image,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { AppStackParamList } from "../navigation/AppStackParamList";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as Location from "expo-location";
-import { fetchGyms } from "../services/gymService";
+import { fetchGyms, fetchNonNetworkGyms } from "../services/gymService";
 import {
   getUserProfile,
   updateUserProfileWithCompany,
@@ -31,6 +32,8 @@ type GymSelectionNavigationProp = StackNavigationProp<
   AppStackParamList,
   "GymSelection"
 >;
+
+const METER_CONVERSION_FACTOR = 1604;
 
 const GymSelectionScreen = () => {
   const navigation = useNavigation<GymSelectionNavigationProp>();
@@ -110,7 +113,11 @@ const GymSelectionScreen = () => {
 
     try {
       const facilities = await fetchGyms(location.lat, location.lng, range);
-      await fetchNonNetworkGyms();
+      await handleFetchNonNetworkGyms(
+        location.lat,
+        location.lng,
+        range * METER_CONVERSION_FACTOR
+      );
       setGroupedCompanies(facilities);
     } catch (error) {
       console.error("Error fetching gyms:", error);
@@ -120,20 +127,8 @@ const GymSelectionScreen = () => {
     }
   };
 
-  const fetchNonNetworkGyms = async () => {
-    const offNetworkGyms = [
-      {
-        id: "off-1",
-        properties: { name: "Example Gym" },
-        distance: 5.0,
-      },
-      {
-        id: "off-2",
-        properties: { name: "Another Gym" },
-        distance: 8.5,
-      },
-    ] as unknown as Gym[];
-
+  const handleFetchNonNetworkGyms = async (lat: any, lng: any, range: any) => {
+    const offNetworkGyms = await fetchNonNetworkGyms(lat, lng, range);
     setNonNetworkGyms(offNetworkGyms);
   };
 
@@ -184,27 +179,47 @@ const GymSelectionScreen = () => {
         <GymForceText type="Title" color={isOnNetwork ? "#f1600d" : "#1a265a"}>
           {title}
         </GymForceText>
-        {}
+        {subtitle && (
+          <GymForceText type="Subtitle" color="#666666">
+            {subtitle}
+          </GymForceText>
+        )}
       </>
     ) : null;
 
-  const renderGymItem = ({ item }: { item: Company | Gym }) =>
+  const renderGymItem = ({
+    item,
+    section,
+  }: {
+    item: Company | Gym;
+    section: { isOnNetwork: boolean };
+  }) =>
     !loading ? (
       <TouchableOpacity
         style={styles.gymCard}
         onPress={() => handleSelectGym(item as Company)}
       >
-        <ImageBackground
-          source={require("../../assets/badge.png")}
-          style={styles.background}
-        >
+        <NoMarginView>
           <GymForceText type="Subtitle" color="#1a265a">
             {item.properties.name}
           </GymForceText>
           <GymForceText type="Note" color="#666666">
-            {item.distance.toFixed(2)} miles from your selected location
+            {item.properties.address}
+            {item.properties.city}, {item.properties.state}
           </GymForceText>
-        </ImageBackground>
+          <GymForceText type="Note" color="#666666">
+            {item.distance.toFixed(2)} miles from your {sourceLocation}
+          </GymForceText>
+        </NoMarginView>
+        {/* Conditionally add logo for network gyms */}
+        {section.isOnNetwork && (
+          <NoMarginView>
+            <Image
+              source={require("../../assets/badge.png")} // Replace with your logo path
+              style={styles.logo}
+            />
+          </NoMarginView>
+        )}
       </TouchableOpacity>
     ) : null;
 
@@ -253,17 +268,6 @@ const GymSelectionScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
-            {/* <GymForceText type="Subtitle" color="#1a265a">
-              Adjust Your Search Range: {range} miles
-            </GymForceText>
-            <Slider
-              style={styles.slider}
-              minimumValue={1}
-              maximumValue={50}
-              step={1}
-              value={range}
-              onValueChange={(value) => setRange(value)}
-            /> */}
             <FlexibleSpacer bottom size={16} />
             <GymForceButton
               fullWidth
@@ -283,7 +287,7 @@ const GymSelectionScreen = () => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id}
-          renderItem={renderGymItem}
+          renderItem={({ item, section }) => renderGymItem({ item, section })} // Pass section
           renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.sectionListContainer}
         />
@@ -350,9 +354,25 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: "#ddd",
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
   },
   sectionListContainer: {
     paddingVertical: 10,
     paddingBottom: 100,
+    paddingHorizontal: 32,
+  },
+  itemBackground: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
   },
 });

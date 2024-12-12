@@ -64,7 +64,7 @@ const GymHeader: React.FC<GymHeaderProps> = ({
           {name}
         </GymForceText>
 
-        <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
+        {/* <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
           <View style={styles.starsRow}>{renderStars()}</View>
           <GymForceText
             type="Subtitle"
@@ -80,7 +80,7 @@ const GymHeader: React.FC<GymHeaderProps> = ({
             fontFamily="Gymforce"
             style={styles.ratingText}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </ImageBackground>
   );
