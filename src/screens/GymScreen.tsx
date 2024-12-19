@@ -1,55 +1,24 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Modal,
-} from "react-native";
-import { useUserProfileContext } from "../context/UserProfileContext";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { View, StyleSheet, ActivityIndicator, FlatList } from "react-native";
 import GymForceText from "../components/GymForceText";
-import FlexibleSpacer from "../components/FlexibleSpacer";
-import ExpandableText from "../components/ExpandableText";
 import GymHeader from "../components/GymHeader";
-import GymReviewForm from "../components/GymReviewForm";
-import GymForceButton from "../components/GymForceButton";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { AppStackParamList } from "../navigation/AppStackParamList";
-import { useGymData } from "../hooks/useGymData";
-import Accordion from "../components/Accordion";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
+import ExpandableText from "../components/ExpandableText";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import GymForceButton from "../components/GymForceButton";
+import { useUserProfileContext } from "../context/UserProfileContext";
+import { useGymData } from "../hooks/useGymData";
+import { auth } from "../services/firebaseConfig";
+import FlexibleSpacer from "../components/FlexibleSpacer";
 import Padding from "../components/Padding";
-
-type GymScreenNavigationProp = StackNavigationProp<
-  AppStackParamList,
-  "GymReviews"
->;
+import GymChatModal from "../components/GymChatModal";
 
 const GymScreen: React.FC = () => {
   const { userProfile } = useUserProfileContext();
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isChatVisible, setChatVisible] = useState(false);
 
   const gymId = userProfile?.gym?.id ?? null;
-
   const { gymData, loading, error, fetchGymData } = useGymData(gymId);
-
-  const navigation = useNavigation<GymScreenNavigationProp>(); // Hook for navigation
-
-  const handleViewReviews = () => {
-    if (gymData?.id) {
-      navigation.navigate("GymReviews", { gymId: gymData.id }); // Navigate to GymReviewsScreen with gymId
-    }
-  };
-
-  const handleRatePress = () => {
-    setModalVisible(true); // Open the modal
-  };
-
-  const closeModal = () => {
-    setModalVisible(false); // Close the modal
-  };
 
   useEffect(() => {
     fetchGymData();
@@ -72,69 +41,79 @@ const GymScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {gymData ? (
-        <View>
-          {/* Header with Gym Background */}
-          <GymHeader
-            name={gymData.properties?.name!}
-            backgroundImageUrl={gymData.properties.app_background_image_url!}
-            rating={gymData.averageRating || 0}
-            totalReviews={gymData.totalReviews || 0}
-            onRatePress={handleRatePress}
-          />
-
-          {/* Check-In History (collapsible) */}
-          <FlexibleSpacer size={16} top />
-          <Padding horizontal size={32}>
-            <Accordion title="Check-In History">
-              <CheckInHistoryCard />
-            </Accordion>
-          </Padding>
-
-          <FlexibleSpacer top size={16} />
-          {/* Owner Message Section */}
-          {gymData.properties.owner_blurb && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Icon name="account" size={24} color="#ff7f50" />
-                <GymForceText style={styles.sectionTitle}>
-                  About the Owner
-                </GymForceText>
-              </View>
-              <ExpandableText
-                htmlContent={gymData.properties.owner_blurb}
-                style={styles.sectionTitle}
+    <>
+      <FlatList
+        data={[
+          {
+            key: "header",
+            render: () => (
+              <GymHeader
+                name={gymData?.properties?.name!}
+                backgroundImageUrl={
+                  gymData?.properties?.app_background_image_url!
+                }
+                rating={gymData?.averageRating || 0}
+                totalReviews={gymData?.totalReviews || 0}
               />
-            </View>
-          )}
-        </View>
-      ) : (
-        <GymForceText style={styles.noData}>
-          No gym information available.
-        </GymForceText>
-      )}
-
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <GymReviewForm gymId={gymData?.id!} onSuccess={closeModal} />
-            <FlexibleSpacer top size={8} />
-            <GymForceButton
-              variant="tertiary"
-              title="Close"
-              onPress={closeModal}
-              size="small"
-            />
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
+            ),
+          },
+          {
+            key: "chatButton",
+            render: () => (
+              <View style={styles.chatButtonContainer}>
+                <FlexibleSpacer bottom size={20} />
+                <GymForceButton
+                  title="Send Owner a Message"
+                  onPress={() => setChatVisible(true)}
+                  variant="primary"
+                />
+                <FlexibleSpacer bottom size={20} />
+              </View>
+            ),
+          },
+          {
+            key: "checkInHistory",
+            render: () => (
+              <>
+                <GymForceText type="Title" color="primary">
+                  Check-In History
+                </GymForceText>
+                <Padding horizontal size={32}>
+                  <CheckInHistoryCard />
+                </Padding>
+                <FlexibleSpacer bottom size={20} />
+              </>
+            ),
+          },
+          {
+            key: "ownerBlurb",
+            render: () =>
+              gymData?.properties?.owner_blurb && (
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Icon name="account" size={24} color="#ff7f50" />
+                    <GymForceText style={styles.sectionTitle}>
+                      About the Owner
+                    </GymForceText>
+                  </View>
+                  <ExpandableText
+                    htmlContent={gymData?.properties?.owner_blurb}
+                    style={styles.sectionTitle}
+                  />
+                </View>
+              ),
+          },
+        ]}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => item.render() as JSX.Element}
+      />
+      <GymChatModal
+        gymId={gymData?.id!}
+        userId={auth.currentUser?.uid!}
+        visible={isChatVisible}
+        onClose={() => setChatVisible(false)}
+      />
+    </>
   );
 };
 
@@ -142,48 +121,13 @@ export default GymScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: "#f5f5f5",
-    flexGrow: 1,
-    paddingBottom: 20,
   },
   loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  headerBackground: {
-    height: 150,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  headerOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-  },
-  gymName: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#ffffff",
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  gymNameSection: {
-    marginHorizontal: 20,
-    padding: 35,
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 4,
   },
   section: {
     marginHorizontal: 20,
@@ -207,67 +151,12 @@ const styles = StyleSheet.create({
     color: "#333",
     marginLeft: 10,
   },
-  sectionContent: {
-    fontSize: 16,
-    color: "#444",
-  },
-  dealItem: {
-    padding: 12,
-    backgroundColor: "#ffe5e0",
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  eventItem: {
-    padding: 12,
-    backgroundColor: "#e0f4ff",
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  itemTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ff7f50",
-  },
-  itemDate: {
-    fontSize: 14,
-    color: "#555",
-    fontStyle: "italic",
-  },
-  itemDescription: {
-    fontSize: 14,
-    color: "#333",
-  },
   noData: {
     fontSize: 16,
     color: "#888",
     textAlign: "center",
-    paddingVertical: 20,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    width: "100%",
-    paddingHorizontal: 16,
-  },
-  modalContent: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 8,
+  chatButtonContainer: {
     padding: 16,
-    alignItems: "center",
-  },
-  closeButton: {
-    marginTop: 16,
-    backgroundColor: "#007bff",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 4,
-  },
-  closeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
   },
 });

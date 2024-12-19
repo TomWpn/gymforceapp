@@ -54,6 +54,5 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 10,
-    backgroundColor: "#f9f9f9",
   },
 });

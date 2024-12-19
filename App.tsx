@@ -6,17 +6,20 @@ import AppContent from "./src/navigation/AppContent";
 import "react-native-get-random-values";
 import { UserProfileProvider } from "./src/context/UserProfileContext";
 import { CheckInProvider } from "./src/context/CheckInContext";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => (
-  <AuthProvider>
-    <UserProfileProvider>
-      <CheckInProvider>
-        <NavigationContainer>
-          <AppContent />
-        </NavigationContainer>
-      </CheckInProvider>
-    </UserProfileProvider>
-  </AuthProvider>
+  <SafeAreaProvider>
+    <AuthProvider>
+      <UserProfileProvider>
+        <CheckInProvider>
+          <NavigationContainer>
+            <AppContent />
+          </NavigationContainer>
+        </CheckInProvider>
+      </UserProfileProvider>
+    </AuthProvider>
+  </SafeAreaProvider>
 );
 
 export default App;
