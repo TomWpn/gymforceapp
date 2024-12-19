@@ -38,7 +38,7 @@ const SignUpScreen = () => {
 
   const handleSignUp = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both an email and password.");
+      // Alert.alert("Error", "Please enter both an email and password.");
       return;
     }
 

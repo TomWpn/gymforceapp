@@ -18,35 +18,9 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppStackParamList } from "../navigation/AppStackParamList";
 import { useGymData } from "../hooks/useGymData";
-
-// Mock data for deals, events, and owner message
-const mockDeals = [
-  {
-    id: 1,
-    title: "50% off First Month",
-    description: "Join now and save 50% on your first month!",
-  },
-  {
-    id: 2,
-    title: "Referral Bonus",
-    description: "Refer a friend and get 20% off your next month!",
-  },
-];
-
-const mockEvents = [
-  {
-    id: 1,
-    title: "Yoga Workshop",
-    date: "November 20, 2024",
-    description: "Learn advanced yoga techniques with our expert instructors.",
-  },
-  {
-    id: 2,
-    title: "Strength Training Basics",
-    date: "December 5, 2024",
-    description: "Intro to strength training with our certified trainers.",
-  },
-];
+import Accordion from "../components/Accordion";
+import CheckInHistoryCard from "../components/CheckInHistoryCard";
+import Padding from "../components/Padding";
 
 type GymScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -110,6 +84,14 @@ const GymScreen: React.FC = () => {
             onRatePress={handleRatePress}
           />
 
+          {/* Check-In History (collapsible) */}
+          <FlexibleSpacer size={16} top />
+          <Padding horizontal size={32}>
+            <Accordion title="Check-In History">
+              <CheckInHistoryCard />
+            </Accordion>
+          </Padding>
+
           <FlexibleSpacer top size={16} />
           {/* Owner Message Section */}
           {gymData.properties.owner_blurb && (
@@ -126,51 +108,6 @@ const GymScreen: React.FC = () => {
               />
             </View>
           )}
-
-          <FlexibleSpacer top size={8} />
-          {/* Upcoming Deals Section */}
-          {/* <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Icon name="tag-heart" size={24} color="#ff7f50" />
-              <GymForceText style={styles.sectionTitle}>
-                Exclusive Deals
-              </GymForceText>
-            </View>
-            {mockDeals.map((deal) => (
-              <View key={deal.id} style={styles.dealItem}>
-                <GymForceText style={styles.itemTitle}>
-                  {deal.title}
-                </GymForceText>
-                <GymForceText style={styles.itemDescription}>
-                  {deal.description}
-                </GymForceText>
-              </View>
-            ))}
-          </View> */}
-
-          <FlexibleSpacer top size={8} />
-          {/* Upcoming Events Section */}
-          {/* <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Icon name="calendar-star" size={24} color="#ff7f50" />
-              <GymForceText style={styles.sectionTitle}>
-                Upcoming Events
-              </GymForceText>
-            </View>
-            {mockEvents.map((event) => (
-              <View key={event.id} style={styles.eventItem}>
-                <GymForceText style={styles.itemTitle}>
-                  {event.title}
-                </GymForceText>
-                <GymForceText style={styles.itemDate}>
-                  {event.date}
-                </GymForceText>
-                <GymForceText style={styles.itemDescription}>
-                  {event.description}
-                </GymForceText>
-              </View>
-            ))}
-          </View> */}
         </View>
       ) : (
         <GymForceText style={styles.noData}>

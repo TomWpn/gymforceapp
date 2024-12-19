@@ -13,6 +13,8 @@ import { handleOpenMap } from "../services/gymService";
 import GymForceText from "./GymForceText";
 import { useCheckInContext } from "../context/CheckInContext";
 import CheckInConfirmationModal from "./CheckInConfirmationModal";
+import NoMarginView from "./NoMarginView";
+import FlexibleSpacer from "./FlexibleSpacer";
 
 type GymSelectionNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -28,44 +30,62 @@ const GymCard: React.FC<{ showCheckIn?: boolean }> = ({
   const [isModalVisible, setModalVisible] = useState(false);
   const gym = userProfile?.gym;
 
-  const handleEditGym = () => {
+  const handleEditOrFindGym = () => {
     navigation.navigate("GymSelection", { mode: "edit" });
+  };
+
+  const handleGetDirections = () => {
+    if (gym) {
+      handleOpenMap(gym);
+    }
   };
 
   const handleCheckIn = async () => {
     try {
       const uid = auth.currentUser?.uid;
       const gymId = gym?.id;
-      if (uid && gymId) {
-        await logCheckIn(uid, gymId, gym.properties.name!);
-        await fetchCheckInHistory();
-        setModalVisible(true);
-      } else {
-        alert("User or Gym information is missing.");
+
+      if (!uid || !gymId) {
+        console.error("Check-in failed: Missing user or gym information.");
+        return;
       }
+
+      await logCheckIn(uid, gymId, gym.properties.name!);
+      await fetchCheckInHistory();
+      setModalVisible(true); // Show confirmation modal
     } catch (error) {
       console.error("Error checking in:", error);
-      alert("Unable to check in at this time.");
     }
   };
 
   const closeModal = () => {
-    setModalVisible(false); // Close the modal
+    setModalVisible(false); // Close the check-in confirmation modal
   };
+
+  const hasBothButtons = !!gym; // Show "Get Directions" only if gym exists
 
   return (
     <CardWithIconBackground
       iconLibrary="MaterialCommunityIcons"
       iconName="weight-lifter"
     >
-      <View style={styles.header}>
-        <GymForceText style={styles.title}>
-          {gym?.properties.name || "Gym Name"}
+      <NoMarginView>
+        <GymForceText type="Title" color="primary">
+          {gym?.properties.name || "No Gym Selected"}
         </GymForceText>
-      </View>
+        {gym && (
+          <>
+            <GymForceText type="Note" color="#666666">
+              {gym.properties.address}, {gym.properties.city},
+              {gym.properties.state}
+            </GymForceText>
+            <FlexibleSpacer size={8} bottom />
+          </>
+        )}
+      </NoMarginView>
 
       {/* Main Action */}
-      {showCheckIn && (
+      {showCheckIn && gym && (
         <View style={styles.mainAction}>
           <GymForceButton
             fullWidth={true}
@@ -80,22 +100,23 @@ const GymCard: React.FC<{ showCheckIn?: boolean }> = ({
       <Spacer size={20} />
 
       {/* Secondary Actions */}
-      <View style={styles.secondaryActions}>
+      <View style={[styles.secondaryActions]}>
         <GymForceButton
-          title="Change Your Gym"
-          onPress={handleEditGym}
+          title={gym ? "Change Your Gym" : "Find a Gym"}
+          onPress={handleEditOrFindGym}
           size="small"
           variant="primary"
-          width="48%" // Adjust width to half of the row
         />
-        <GymForceButton
-          title="Get Directions"
-          variant="tertiary"
-          onPress={() => handleOpenMap(gym!)}
-          size="small"
-          width="48%" // Adjust width to half of the row
-        />
+        {gym && (
+          <GymForceButton
+            title="Get Directions"
+            variant="tertiary"
+            onPress={handleGetDirections}
+            size="small"
+          />
+        )}
       </View>
+
       {/* Confirmation Modal */}
       <CheckInConfirmationModal
         isVisible={isModalVisible}
@@ -109,37 +130,19 @@ const GymCard: React.FC<{ showCheckIn?: boolean }> = ({
 export default GymCard;
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
-    marginBottom: 12,
-  },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "700",
     color: "#1a265a",
+    paddingTop: 10,
   },
   mainAction: {
     marginVertical: 10,
   },
   secondaryActions: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
     alignItems: "center",
-    marginTop: 15,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    width: "100%",
-    paddingHorizontal: 16,
-  },
-  modalContent: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
+    marginTop: 10,
   },
 });

@@ -26,6 +26,7 @@ import FlexibleSpacer from "../components/FlexibleSpacer";
 import { useUserProfileContext } from "../context/UserProfileContext";
 import NoMarginView from "../components/NoMarginView";
 import Padding from "../components/Padding";
+import { createCompanyInHubSpot } from "../services/hubspotHelper";
 
 type GymSelectionRouteProp = RouteProp<AppStackParamList, "GymSelection">;
 type GymSelectionNavigationProp = StackNavigationProp<
@@ -60,7 +61,7 @@ const GymSelectionScreen = () => {
     const fetchUserProfile = async () => {
       const uid = auth.currentUser?.uid;
       if (!uid) {
-        Alert.alert("Error", "User not authenticated");
+        // Alert.alert("Error", "User not authenticated");
         return;
       }
 
@@ -79,7 +80,7 @@ const GymSelectionScreen = () => {
   const getCurrentLocation = async (): Promise<Address | null> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission denied", "Unable to access current location.");
+      // Alert.alert("Permission denied", "Unable to access current location.");
       return null;
     }
     const location = await Location.getCurrentPositionAsync({});
@@ -106,7 +107,7 @@ const GymSelectionScreen = () => {
     }
 
     if (!location) {
-      Alert.alert("Error", "Unable to determine source location.");
+      // Alert.alert("Error", "Unable to determine source location.");
       setLoading(false);
       return;
     }
@@ -121,7 +122,7 @@ const GymSelectionScreen = () => {
       setGroupedCompanies(facilities);
     } catch (error) {
       console.error("Error fetching gyms:", error);
-      Alert.alert("Error", "Could not fetch gyms at this time.");
+      // Alert.alert("Error", "Could not fetch gyms at this time.");
     } finally {
       setLoading(false);
     }
@@ -132,50 +133,56 @@ const GymSelectionScreen = () => {
     setNonNetworkGyms(offNetworkGyms);
   };
 
-  const handleSelectGym = async (gym: Company) => {
+  const handleSelectGym = async (gym: Gym) => {
     const uid = auth.currentUser?.uid;
     if (!uid) {
-      Alert.alert("Error", "User not authenticated");
+      // Alert.alert("Error", "User not authenticated");
       return;
     }
 
     try {
+      if (!gym.isOnNetwork) {
+        // add to hubspot
+        gym = await createCompanyInHubSpot(gym);
+      }
       await updateUserProfileWithCompany(uid, gym, "gym");
       await refreshUserProfile();
-      Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
+      // Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
       if (mode === "signup") {
-        navigation.navigate("BottomTabs", { screen: "Dashboard" });
+        navigation.navigate("BottomTabs", { screen: "Gyms" });
       } else {
         navigation.goBack();
       }
     } catch (error) {
       console.error("Error saving selected gym:", error);
-      Alert.alert("Error", "Unable to save gym selection at this time.");
+      // Alert.alert("Error", "Unable to save gym selection at this time.");
     }
   };
 
   const sections = [
-    // Create a section for each group in groupedCompanies
     ...Object.keys(groupedCompanies).map((key) => ({
-      title: key, // Use the key as the section title
-      data: groupedCompanies[key], // Data is the array of gyms in this group
-      isOnNetwork: true, // Set this to true for gyms in the network
+      title: key,
+      data: groupedCompanies[key],
+      isOnNetwork: true,
     })),
-    {
-      title: "Non - Network Gyms",
-      subtitle:
-        "If you'd like to join a gym that is not in the network, please select it here. You will not be able to earn rewards at these gyms.",
-      data: nonNetworkGyms, // Add suggested gyms as a separate section
-      isOnNetwork: false, // Set this to false for gyms not in the network
-    },
+    ...(Object.keys(groupedCompanies).length === 0
+      ? [
+          {
+            title: "Non - Network Gyms",
+            subtitle:
+              "If you'd like to join a gym that is not in the network, please select it here. You will not be able to earn rewards at these gyms.",
+            data: nonNetworkGyms,
+            isOnNetwork: false,
+          },
+        ]
+      : []),
   ];
 
   const renderSectionHeader = ({
     section: { title, isOnNetwork, subtitle },
   }: any) =>
-    !loading && Object.keys(groupedCompanies).length > 0 ? (
+    !loading ? (
       <>
-        {!isOnNetwork && <FlexibleSpacer size={32} top />}
         <GymForceText type="Title" color={isOnNetwork ? "#f1600d" : "#1a265a"}>
           {title}
         </GymForceText>
@@ -197,7 +204,7 @@ const GymSelectionScreen = () => {
     !loading ? (
       <TouchableOpacity
         style={styles.gymCard}
-        onPress={() => handleSelectGym(item as Company)}
+        onPress={() => handleSelectGym(item as Gym)}
       >
         <NoMarginView>
           <GymForceText type="Subtitle" color="#1a265a">
@@ -208,7 +215,10 @@ const GymSelectionScreen = () => {
             {item.properties.city}, {item.properties.state}
           </GymForceText>
           <GymForceText type="Note" color="#666666">
-            {item.distance.toFixed(2)} miles from your {sourceLocation}
+            {item.distance.toFixed(2)} miles{" "}
+            {sourceLocation === "current"
+              ? "away"
+              : `from your ${sourceLocation}`}
           </GymForceText>
         </NoMarginView>
         {/* Conditionally add logo for network gyms */}

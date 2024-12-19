@@ -8,6 +8,7 @@ import CardWithIconBackground from "./CardWithIconBackground";
 import { useUserProfileContext } from "../context/UserProfileContext";
 import FlexibleSpacer from "./FlexibleSpacer";
 import GymForceText from "./GymForceText";
+import { MaterialIcons, Feather, FontAwesome5 } from "@expo/vector-icons";
 
 type UserDetailsNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -25,36 +26,42 @@ const UserDetailsCard: React.FC = () => {
   return (
     <CardWithIconBackground iconLibrary="Ionicons" iconName="person-outline">
       <View style={styles.header}>
-        <GymForceText style={styles.title}>Your Details</GymForceText>
+        <GymForceText type="Title" color="primary">
+          Your Details
+        </GymForceText>
       </View>
       <View style={styles.details}>
-        <GymForceText style={styles.label}>Name:</GymForceText>
-        <GymForceText style={styles.info}>
-          {userProfile?.name || "Not provided"}
-        </GymForceText>
+        <View style={styles.detailRow}>
+          <MaterialIcons name="person" size={20} color="#1a265a" />
+          <GymForceText style={styles.info}>
+            {userProfile?.name || "Name not provided"}
+          </GymForceText>
+        </View>
 
         <FlexibleSpacer size={4} top />
-        <GymForceText style={styles.label}>Phone:</GymForceText>
-        <GymForceText style={styles.info}>
-          {userProfile?.phone || "Not provided"}
-        </GymForceText>
-
-        <FlexibleSpacer size={4} top />
-        {userProfile?.email && (
-          <>
-            <GymForceText style={styles.label}>Email:</GymForceText>
-            <GymForceText style={styles.info}>{userProfile.email}</GymForceText>
-          </>
-        )}
+        <View style={styles.detailRow}>
+          <Feather name="phone" size={20} color="#1a265a" />
+          <GymForceText style={styles.info}>
+            {userProfile?.phone || "Phone not provided"}
+          </GymForceText>
+        </View>
 
         <FlexibleSpacer size={4} top />
         {userProfile?.address && (
-          <>
-            <GymForceText style={styles.label}>Address:</GymForceText>
+          <View style={styles.detailRow}>
+            <FontAwesome5 name="map-marker-alt" size={20} color="#1a265a" />
             <GymForceText style={styles.info}>
               {userProfile.address.formatted_address}
             </GymForceText>
-          </>
+          </View>
+        )}
+
+        <FlexibleSpacer size={4} top />
+        {userProfile?.email && (
+          <View style={styles.detailRow}>
+            <Feather name="mail" size={20} color="#1a265a" />
+            <GymForceText style={styles.info}>{userProfile.email}</GymForceText>
+          </View>
         )}
       </View>
 
@@ -64,7 +71,6 @@ const UserDetailsCard: React.FC = () => {
           onPress={handleEditProfile}
           variant="primary"
           size="small"
-          width={"50%"}
         />
       </View>
     </CardWithIconBackground>
@@ -85,16 +91,18 @@ const styles = StyleSheet.create({
   },
   details: {
     marginVertical: 10,
+    textAlign: "left",
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#666",
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
   info: {
     fontSize: 16,
     color: "#333",
     fontStyle: "italic",
+    marginLeft: 8,
   },
   actions: {
     marginTop: 15,

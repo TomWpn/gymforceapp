@@ -27,20 +27,28 @@ const EmployerCard: React.FC = () => {
   return (
     <CardWithIconBackground iconLibrary="Ionicons" iconName="business-outline">
       <View style={styles.header}>
-        <GymForceText style={styles.title}>
+        <GymForceText type="Title" color="primary">
           {employer?.properties.name || "No Employer Selected"}
         </GymForceText>
+        {employer && (
+          <>
+            <GymForceText type="Note" color="#666666">
+              {employer.properties.address}, {employer.properties.city},
+              {employer.properties.state}
+            </GymForceText>
+            <FlexibleSpacer size={8} bottom />
+          </>
+        )}
       </View>
 
       <FlexibleSpacer top size={8} />
 
       {/* Action Button */}
       <GymForceButton
-        title="Edit Employer"
+        title={employer ? "Change Employer" : "Select Employer"}
         onPress={handleEditEmployer}
         variant="primary"
         size="small"
-        width={"50%"}
       />
     </CardWithIconBackground>
   );
@@ -51,7 +59,6 @@ export default EmployerCard;
 const styles = StyleSheet.create({
   header: {
     alignItems: "center",
-    marginBottom: 12,
   },
   title: {
     fontSize: 20,

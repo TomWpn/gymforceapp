@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import GymForceText from "./GymForceText"; // Adjust the import path as needed
 import { Ionicons } from "@expo/vector-icons"; // Adjust the import path if not using Expo
+import GymCard from "./GymCard";
+import Padding from "./Padding";
 
 interface GymHeaderProps {
   name: string;
@@ -53,18 +55,10 @@ const GymHeader: React.FC<GymHeaderProps> = ({
       source={{ uri: backgroundImageUrl || defaultImageUrl }}
       style={[styles.headerBackground, style]}
     >
-      <View style={styles.headerOverlay} />
-      <View style={styles.headerContent}>
-        <GymForceText
-          type="Title"
-          color="#1a265a"
-          fontFamily="Gymforce"
-          style={styles.gymName}
-        >
-          {name}
-        </GymForceText>
-
-        {/* <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
+      <Padding horizontal size={32}>
+        <GymCard />
+      </Padding>
+      {/* <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
           <View style={styles.starsRow}>{renderStars()}</View>
           <GymForceText
             type="Subtitle"
@@ -81,15 +75,14 @@ const GymHeader: React.FC<GymHeaderProps> = ({
             style={styles.ratingText}
           />
         </TouchableOpacity> */}
-      </View>
     </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   headerBackground: {
-    height: 200,
-    justifyContent: "flex-end",
+    height: 300,
+    justifyContent: "center",
     alignItems: "center",
   },
   headerOverlay: {

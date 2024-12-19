@@ -54,7 +54,7 @@ const UserDetailsScreen = () => {
 
   const handleSaveDetails = async () => {
     if (!name || !phone || !addressDetails) {
-      Alert.alert("Error", "Please fill in all fields.");
+      // Alert.alert("Error", "Please fill in all fields.");
       return;
     }
 
@@ -62,16 +62,26 @@ const UserDetailsScreen = () => {
       const uid = auth.currentUser?.uid;
       if (!uid) throw new Error("User not authenticated");
 
+      const currentDate = new Date().toISOString();
+
       await updateUserProfileField(uid, {
         name,
         phone,
         address: addressDetails,
+        email: auth.currentUser?.email!,
+        ...(mode === "signup" || (userProfile && !userProfile.createdAt)
+          ? {
+              createdAt: new Date(
+                auth.currentUser?.metadata.creationTime!
+              ).toISOString(),
+            }
+          : { updatedAt: currentDate }),
       });
 
       // Refresh user profile in the context
       await refreshUserProfile();
 
-      Alert.alert("Success", "Your details have been saved.");
+      // Alert.alert("Success", "Your details have been saved.");
       if (mode === "signup") {
         navigation.navigate("EmployerSelection", { mode: "signup" });
       } else {
@@ -79,7 +89,7 @@ const UserDetailsScreen = () => {
       }
     } catch (error) {
       console.error("Error saving user details:", error);
-      Alert.alert("Error", "Could not save user details.");
+      // Alert.alert("Error", "Could not save user details.");
     }
   };
 
@@ -135,13 +145,6 @@ const UserDetailsScreen = () => {
               listView: styles.autocompleteList,
               row: styles.autocompleteRow,
               description: styles.autocompleteDescription,
-            }}
-            requestUrl={{
-              useOnPlatform: "web", // or "all"
-              url: "https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api", // or any proxy server that hits https://maps.googleapis.com/maps/api
-              headers: {
-                Authorization: `an auth token`, // if required for your proxy
-              },
             }}
           />
         ) : (

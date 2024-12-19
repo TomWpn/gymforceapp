@@ -29,7 +29,7 @@ const GymReviewForm = ({
     const fetchReview = async () => {
       const userId = auth.currentUser?.uid;
       if (!userId) {
-        Alert.alert("Error", "User is not logged in.");
+        // Alert.alert("Error", "User is not logged in.");
         setLoading(false);
         return;
       }
@@ -53,13 +53,13 @@ const GymReviewForm = ({
 
   const handleSubmit = async () => {
     if (!rating || rating < 1 || rating > 5) {
-      Alert.alert("Invalid Rating", "Please provide a rating between 1 and 5.");
+      // Alert.alert("Invalid Rating", "Please provide a rating between 1 and 5.");
       return;
     }
 
     const userId = auth.currentUser?.uid;
     if (!userId) {
-      Alert.alert("Error", "User is not logged in.");
+      // Alert.alert("Error", "User is not logged in.");
       return;
     }
 
@@ -75,14 +75,14 @@ const GymReviewForm = ({
 
     try {
       await addGymReview(reviewData);
-      Alert.alert("Review Submitted", "Thank you for your review!");
+      // Alert.alert("Review Submitted", "Thank you for your review!");
       onSuccess();
     } catch (error) {
       console.error("Error submitting review:", error);
-      Alert.alert(
-        "Submission Error",
-        "Failed to submit your review. Please try again."
-      );
+      // Alert.alert(
+      //   "Submission Error",
+      //   "Failed to submit your review. Please try again."
+      // );
     }
   };
 

@@ -5,6 +5,7 @@ import { getNearbyFacilitiesSecondGen } from "./functions/getNearbyFacilitiesSec
 import { getCompanyByIdSecondGen } from "./functions/getCompanyByIdSecondGen";
 import { onGymReviewCreated } from "./functions/onGymReviewCreated";
 import { onGymReviewUpdated } from "./functions/onGymReviewUpdated";
+import { createCompanySecondGen } from "./functions/createCompanySecondGen";
 
 // locate all functions closest to users
 setGlobalOptions({ region: "us-central1" });
@@ -13,3 +14,4 @@ exports.getNearbyFacilitiesSecondGen = getNearbyFacilitiesSecondGen;
 exports.getCompanyByIdSecondGen = getCompanyByIdSecondGen;
 exports.onGymReviewCreated = onGymReviewCreated;
 exports.onGymReviewUpdated = onGymReviewUpdated;
+exports.createCompanySecondGen = createCompanySecondGen;

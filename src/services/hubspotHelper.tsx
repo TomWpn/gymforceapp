@@ -1,6 +1,7 @@
 // src/services/hubspotHelper.ts
 import axios from "axios";
 import { auth } from "./firebaseConfig";
+import { Company } from "../types";
 
 const getAuthHeaders = async () => {
   const user = auth.currentUser;
@@ -16,4 +17,22 @@ export const fetchGymFromHubSpot = async (companyId: string) => {
     { headers }
   );
   return response.data.company;
+};
+
+export const createCompanyInHubSpot = async (companyData: Company) => {
+  const headers = await getAuthHeaders();
+  try {
+    const response = await axios.post(
+      `${process.env.FIREBASE_FUNCTION_HOST_URL}/createCompanySecondGen`,
+      { ...companyData.properties },
+      { headers }
+    );
+    return response.data.company;
+  } catch (error: any) {
+    console.error(
+      "Error creating company:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to create company in HubSpot");
+  }
 };

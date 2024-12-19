@@ -1,5 +1,6 @@
 // src/types.ts
 
+import { AddressComponent } from "react-native-google-places-autocomplete";
 import { CheckInRecord } from "./services/checkInService";
 
 // HubSpot Company Properties Interface
@@ -15,8 +16,8 @@ export interface CompanyProperties {
   domain?: string | null;
   zip?: string | null;
   lifecyclestage: string;
-  plan_nutrition: string;
-  plan_personal_training: string;
+  plan_nutrition: boolean;
+  plan_personal_training: boolean;
   industry?: string;
   owner_blurb?: string | null;
   lat?: string | null;
@@ -56,6 +57,7 @@ export interface UserProfile {
   employer?: Company; // Following the HubSpot Company structure
   gym?: Company; // Following the HubSpot Company structure
   checkInHistory?: CheckInRecord[];
+  createdAt?: string;
 }
 
 export interface GymReview {
@@ -80,15 +82,18 @@ export interface GooglePlacesApiResponse {
   results: GooglePlaceResult[];
   status: string;
 }
-
 export interface GooglePlaceResult {
-  business_status?: "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
+  place_id: string;
+  name: string;
+  formatted_address?: string;
+  adr_address?: string;
+  address_components?: AddressComponent[];
   geometry: {
     location: {
       lat: number;
       lng: number;
     };
-    viewport: {
+    viewport?: {
       northeast: {
         lat: number;
         lng: number;
@@ -99,25 +104,71 @@ export interface GooglePlaceResult {
       };
     };
   };
+  types?: string[];
   icon?: string;
-  icon_background_color?: string;
-  icon_mask_base_uri?: string;
-  name: string;
+  photos?: Array<{
+    height: number;
+    html_attributions: string[];
+    width: number;
+    photo_reference: string;
+  }>;
   opening_hours?: {
-    open_now: boolean;
+    open_now?: boolean;
+    weekday_text?: string[];
+    periods?: Array<{
+      open: { day: number; time: string };
+      close?: { day: number; time: string };
+    }>;
+    special_days?: Array<{
+      date: string;
+      exception: boolean;
+    }>;
+    type?: string;
   };
-  photos?: GooglePlacePhoto[];
-  place_id: string;
+  secondary_opening_hours?: Array<{
+    open_now?: boolean;
+    periods: Array<{
+      open: { day: number; time: string };
+      close?: { day: number; time: string };
+    }>;
+    weekday_text?: string[];
+  }>;
+  delivery?: boolean;
+  dine_in?: boolean;
+  takeout?: boolean;
+  curbside_pickup?: boolean;
+  serves_beer?: boolean;
+  serves_breakfast?: boolean;
+  serves_brunch?: boolean;
+  serves_dinner?: boolean;
+  serves_lunch?: boolean;
+  serves_vegetarian_food?: boolean;
+  serves_wine?: boolean;
+  reservable?: boolean;
+  wheelchair_accessible_entrance?: boolean;
+  reviews?: Array<{
+    author_name: string;
+    rating: number;
+    text: string;
+    time: number;
+    profile_photo_url?: string;
+    relative_time_description?: string;
+  }>;
+  editorial_summary?: {
+    overview: string;
+  };
+  rating?: number;
+  user_ratings_total?: number;
+  vicinity?: string;
+  url?: string;
+  website?: string;
+  formatted_phone_number?: string;
+  international_phone_number?: string;
   plus_code?: {
     compound_code: string;
     global_code: string;
   };
-  rating?: number;
-  reference: string;
-  scope: string;
-  types: string[];
-  user_ratings_total?: number;
-  vicinity?: string;
+  utc_offset_minutes?: number;
 }
 
 export interface GooglePlacePhoto {

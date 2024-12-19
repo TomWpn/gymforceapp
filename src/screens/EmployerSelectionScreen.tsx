@@ -61,7 +61,7 @@ const EmployerSelectionScreen = () => {
         setEmployers(results || []);
       } catch (error) {
         console.error("Error searching for employers:", error);
-        Alert.alert("Error", "Unable to search for employers at this time.");
+        // Alert.alert("Error", "Unable to search for employers at this time.");
       } finally {
         setLoading(false);
         setSearched(true);
@@ -76,7 +76,7 @@ const EmployerSelectionScreen = () => {
 
       await updateUserProfileWithCompany(uid, employer, "employer");
       await refreshUserProfile(); // Function to refresh user profile data
-      Alert.alert("Success", `Selected employer: ${employer.properties.name}`);
+      // Alert.alert("Success", `Selected employer: ${employer.properties.name}`);
 
       if (mode === "signup") {
         navigation.navigate("GymSelection", { mode: "signup" });
@@ -85,7 +85,7 @@ const EmployerSelectionScreen = () => {
       }
     } catch (error) {
       console.error("Error saving selected employer:", error);
-      Alert.alert("Error", "Unable to save employer at this time.");
+      // Alert.alert("Error", "Unable to save employer at this time.");
     }
   };
 

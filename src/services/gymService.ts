@@ -9,6 +9,10 @@ import { auth } from "./firebaseConfig";
 import { Alert, Linking } from "react-native";
 import { GymReview, Gym, GooglePlacesApiResponse } from "../types";
 import { calculateDistance } from "../utils/calculateDistance";
+import {
+  AddressComponent,
+  PlaceType,
+} from "react-native-google-places-autocomplete";
 
 const getAuthHeaders = async () => {
   const user = auth.currentUser;
@@ -40,7 +44,7 @@ export const fetchGyms = async (lat: number, lng: number, range: number) => {
  */
 export const handleOpenMap = (gym: any) => {
   if (!gym?.properties.address || !gym?.properties.city) {
-    Alert.alert("Location unavailable", "No address found for this gym.");
+    // Alert.alert("Location unavailable", "No address found for this gym.");
     return;
   }
 
@@ -54,7 +58,7 @@ export const handleOpenMap = (gym: any) => {
       if (supported) {
         Linking.openURL(url);
       } else {
-        Alert.alert("Error", "Unable to open the maps app.");
+        // Alert.alert("Error", "Unable to open the maps app.");
       }
     })
     .catch((err) => console.error("Error opening map:", err));
@@ -76,7 +80,6 @@ export const getGymDetails = async (gymId: string) => {
     ...firestoreData,
     ...hubSpotData,
   };
-  console.log("Combined Data:", combinedData);
   return combinedData;
 };
 
@@ -148,19 +151,22 @@ export const fetchNonNetworkGyms = async (
         app_background_image_url: place.photos?.[0]?.photo_reference
           ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${process.env.GOOGLE_MAPS_API_KEY}`
           : null,
-        lifecyclestage: "non-network",
-        plan_nutrition: "N/A",
-        plan_personal_training: "N/A",
-        description: null,
+        lifecyclestage: "97095050", // Lead - In Process (HubSpot)
+        plan_nutrition: false,
+        plan_personal_training: false,
+        description: place.editorial_summary?.overview || null,
         createdate: null,
         hs_lastmodifieddate: null,
         hs_object_id: null,
-        city: null,
-        state: null,
-        domain: null,
-        zip: null,
-        industry: "Fitness",
-        owner_blurb: null,
+        city: getAddressComponent(place.address_components!, "locality"),
+        state: getAddressComponent(
+          place.address_components!,
+          "administrative_area_level_1"
+        ),
+        domain: place.website || null,
+        zip: getAddressComponent(place.address_components!, "postal_code"),
+        industry: "Functional Fitness",
+        owner_blurb: place.editorial_summary?.overview || null,
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -187,4 +193,13 @@ export const fetchNonNetworkGyms = async (
     console.error("Error fetching non-network gyms:", error.message);
     throw new Error("Failed to fetch non-network gyms.");
   }
+};
+
+// Utility to extract specific address components
+export const getAddressComponent = (
+  components: AddressComponent[],
+  targetType: PlaceType
+): string | null => {
+  const component = components?.find((c) => c.types.includes(targetType));
+  return component?.long_name || null;
 };

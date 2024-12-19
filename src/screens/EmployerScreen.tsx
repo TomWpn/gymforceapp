@@ -7,6 +7,7 @@ import CheckInProgressTracker from "../components/CheckInProgressTracker";
 import GymForceText from "../components/GymForceText";
 import { fetchEmployerById } from "../services/employerService"; // Import the HubSpot fetching function
 import { useCheckInContext } from "../context/CheckInContext";
+import WelcomeBonusTracker from "../components/WelcomeBonusTracker";
 
 const mockWellnessBenefits = [
   {
@@ -55,7 +56,7 @@ const EmployerSelectionScreen: React.FC = () => {
       setEmployerDetails(employerData);
     } catch (error) {
       console.error("Error fetching employer details:", error);
-      Alert.alert("Error", "Could not fetch employer details.");
+      // Alert.alert("Error", "Could not fetch employer details.");
     }
   };
 
@@ -124,15 +125,16 @@ const EmployerSelectionScreen: React.FC = () => {
         ))}
       </View> */}
       {/* Wellness Milestones Section */}
-      {/* <View style={styles.section}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Icon name="medal" size={24} color="#f1600d" />
           <GymForceText style={styles.sectionTitle}>
             Your Wellness Milestones
           </GymForceText>
         </View>
-        <CheckInProgressTracker />
-      </View> */}
+        {/* <CheckInProgressTracker /> */}
+        <WelcomeBonusTracker />
+      </View>
     </ScrollView>
   );
 };

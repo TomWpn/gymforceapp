@@ -20,7 +20,7 @@ const BottomTabs = () => {
 
   return (
     <Tab.Navigator
-      initialRouteName="Dashboard"
+      initialRouteName="Your Gym"
       screenOptions={{
         tabBarShowLabel: false,
         tabBarStyle: { height: 60, backgroundColor: "#1a265a" },
@@ -29,7 +29,7 @@ const BottomTabs = () => {
         tabBarInactiveTintColor: "#ffffff",
       }}
     >
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
         options={{
@@ -37,7 +37,7 @@ const BottomTabs = () => {
             <HomeIcon name="home-outline" color={color} size={size} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Your Gym"
         component={GymScreen}
