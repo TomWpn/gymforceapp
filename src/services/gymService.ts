@@ -92,7 +92,6 @@ export const getGymDetails = async (gymId: string) => {
 export const getUserReview = async (gymId: string, userId: string) => {
   try {
     const review = await getUserReviewFromFirestore(gymId, userId);
-    console.log("Fetched User Review:", review);
     return review;
   } catch (error) {
     console.error(
@@ -110,7 +109,6 @@ export const getUserReview = async (gymId: string, userId: string) => {
 export const addGymReview = async (reviewData: GymReview) => {
   try {
     await addOrUpdateReviewToFirestore(reviewData);
-    console.log("Review added or updated successfully:", reviewData);
   } catch (error) {
     console.error("Error adding or updating review:", error);
     throw new Error("Failed to add or update review.");

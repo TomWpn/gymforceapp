@@ -58,6 +58,7 @@ const SignUpScreen = () => {
       Alert.alert("Signup Error", errorMessage);
     } finally {
       setLoading(false);
+      navigation.navigate("UserDetails", { mode: "signup" });
     }
   };
 
@@ -120,7 +121,12 @@ const SignUpScreen = () => {
 
             {/* Log In Link */}
             <FlexibleSpacer top size={32} />
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <TouchableOpacity
+              onPress={() => {
+                Keyboard.dismiss();
+                navigation.navigate("Login");
+              }}
+            >
               <GymForceText color="#ff7f50">
                 Already have an account? Log In
               </GymForceText>
@@ -135,6 +141,7 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   keyboardAvoidingContainer: {
     flex: 1,
+    backgroundColor: "#ffffff", // Match your app's background
   },
   background: {
     flex: 1,
@@ -143,7 +150,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, .8)",
   },
   container: {
     flex: 1,

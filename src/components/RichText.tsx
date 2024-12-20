@@ -4,7 +4,7 @@ import RenderHTML from "react-native-render-html";
 
 const RichTextComponent = ({ htmlContent }: { htmlContent: string }) => {
   const { width } = useWindowDimensions();
-  console.log("HTML Content:", htmlContent);
+  // console.log("HTML Content:", htmlContent);
 
   return (
     <ScrollView style={{ paddingHorizontal: 20 }}>

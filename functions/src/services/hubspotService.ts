@@ -49,7 +49,6 @@ export const getCompanyById = async (companyId: string) => {
     );
 
     const company = response.data;
-    console.log("Fetched company from HubSpot:", company);
 
     // Check if lat/lng are missing and attempt to update them
     let { lat, lng } = company.properties;
@@ -208,7 +207,6 @@ const updateCompanyCoordinates = async (
       { properties: { lat, lng } },
       { headers }
     );
-    console.log(`Updated company ${companyId} with lat: ${lat}, lng: ${lng}`);
   } catch (error) {
     console.error(
       `Error updating company ${companyId} coordinates in HubSpot:`,
@@ -284,7 +282,6 @@ export const createCompanyInHubSpot = async (companyData: {
     // Step 2: Check if a matching company already exists
     if (searchResponse.data.total > 0) {
       const existingCompany = searchResponse.data.results[0];
-      console.log("Company already exists in HubSpot:", existingCompany);
       return existingCompany; // Return the existing company's data
     }
 

@@ -12,7 +12,6 @@ export const createUserProfile = async (
 
   try {
     await setDoc(userRef, profileData, { merge: true }); // Allows adding non-existing fields only
-    console.log("User profile created/updated successfully");
   } catch (error) {
     console.error("Error creating user profile:", error);
   }
@@ -47,7 +46,6 @@ export const updateUserProfileField = async (
 
   try {
     await setDoc(userRef, data, { merge: true });
-    console.log("User profile updated successfully");
   } catch (error) {
     console.error("Error updating user profile:", error);
   }
@@ -63,7 +61,6 @@ export const updateUserProfileWithCompany = async (
 
   try {
     await setDoc(userRef, { [type]: companyData }, { merge: true });
-    console.log(`${type} updated successfully in Firestore.`);
   } catch (error) {
     console.error(`Error updating ${type} in Firestore:`, error);
   }
@@ -75,7 +72,6 @@ export const deleteUserProfile = async (uid: string): Promise<void> => {
 
   try {
     await deleteDoc(userRef);
-    console.log("User profile deleted successfully");
   } catch (error) {
     console.error("Error deleting user profile:", error);
   }
@@ -94,7 +90,6 @@ export const resetUserProfileFields = async (
 
   try {
     await updateDoc(userRef, resetData);
-    console.log("User profile fields reset successfully");
   } catch (error) {
     console.error("Error resetting user profile fields:", error);
   }

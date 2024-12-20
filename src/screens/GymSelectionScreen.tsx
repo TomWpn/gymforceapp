@@ -43,8 +43,8 @@ const GymSelectionScreen = () => {
   const { refreshUserProfile } = useUserProfileContext();
 
   const [sourceLocation, setSourceLocation] = useState<
-    "employer" | "home" | "current"
-  >("home");
+    "employer" | "home" | "current" | null
+  >(null);
   const [range, setRange] = useState(20);
   const [groupedCompanies, setGroupedCompanies] = useState<GroupedCompanies>(
     {}
@@ -93,15 +93,17 @@ const GymSelectionScreen = () => {
     };
   };
 
-  const fetchNearbyGyms = async () => {
+  const fetchNearbyGyms = async (source?: "employer" | "home" | "current") => {
     setLoading(true);
     let location: { lat: number; lng: number } | null = null;
 
-    if (sourceLocation === "employer" && employerCoordinates) {
+    const effectiveSource = source || sourceLocation; // Use passed source or fallback to state
+
+    if (effectiveSource === "employer" && employerCoordinates) {
       location = employerCoordinates;
-    } else if (sourceLocation === "home" && homeAddress) {
+    } else if (effectiveSource === "home" && homeAddress) {
       location = homeAddress.coordinates;
-    } else if (sourceLocation === "current") {
+    } else if (effectiveSource === "current") {
       const currentLocation = await getCurrentLocation();
       if (currentLocation) location = currentLocation.coordinates;
     }
@@ -131,6 +133,21 @@ const GymSelectionScreen = () => {
   const handleFetchNonNetworkGyms = async (lat: any, lng: any, range: any) => {
     const offNetworkGyms = await fetchNonNetworkGyms(lat, lng, range);
     setNonNetworkGyms(offNetworkGyms);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchNearbyGyms();
+    };
+    fetchData();
+  }, [sourceLocation]);
+
+  const handleSourceChange = async (
+    source: "employer" | "home" | "current"
+  ) => {
+    setSourceLocation(source);
+    setGroupedCompanies({});
+    setNonNetworkGyms([]);
   };
 
   const handleSelectGym = async (gym: Gym) => {
@@ -165,7 +182,7 @@ const GymSelectionScreen = () => {
       data: groupedCompanies[key],
       isOnNetwork: true,
     })),
-    ...(Object.keys(groupedCompanies).length === 0
+    ...(Object.keys(groupedCompanies).length === 0 && nonNetworkGyms.length > 0
       ? [
           {
             title: "Non - Network Gyms",
@@ -262,7 +279,7 @@ const GymSelectionScreen = () => {
                     sourceLocation === loc && styles.selectedPill,
                   ]}
                   onPress={() =>
-                    setSourceLocation(loc as typeof sourceLocation)
+                    handleSourceChange(loc as "employer" | "home" | "current")
                   }
                 >
                   <GymForceText
@@ -278,12 +295,7 @@ const GymSelectionScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
-            <FlexibleSpacer bottom size={16} />
-            <GymForceButton
-              fullWidth
-              title="Search Gyms"
-              onPress={fetchNearbyGyms}
-            />
+
             <FlexibleSpacer bottom size={16} />
             {loading && (
               <GymForceText color="#1a265a">

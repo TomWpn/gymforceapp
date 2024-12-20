@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ImageBackground,
+  Keyboard,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
@@ -41,9 +42,10 @@ const LoginScreen = () => {
         email,
         password
       );
+      console.log("User logged in:", userCredential.user);
       setUser(userCredential.user);
     } catch (error: any) {
-      // Alert.alert("Login Error", error.message);
+      Alert.alert("Login Error", error.message);
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,12 @@ const LoginScreen = () => {
           />
           {/* Log In Link */}
           <FlexibleSpacer top size={32} />
-          <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+          <TouchableOpacity
+            onPress={() => {
+              Keyboard.dismiss();
+              navigation.navigate("SignUp");
+            }}
+          >
             <GymForceText color="#ff7f50">
               Don't have an account? Sign Up
             </GymForceText>

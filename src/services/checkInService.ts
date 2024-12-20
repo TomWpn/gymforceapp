@@ -30,7 +30,6 @@ export const logCheckIn = async (
       gymName,
       timestamp: Timestamp.now(), // Firestore timestamp for consistency
     });
-    console.log("Check-in logged successfully");
   } catch (error) {
     console.error("Error logging check-in:", error);
     throw error;
