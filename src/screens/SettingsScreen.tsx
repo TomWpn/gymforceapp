@@ -6,12 +6,26 @@ import GymCard from "../components/GymCard";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import GymForceButton from "../components/GymForceButton";
 import { auth } from "../services/firebaseConfig";
+import { AppStackParamList } from "../navigation/AppStackParamList";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "@react-navigation/native";
+
+type SettingsScreenNavigationProp = StackNavigationProp<
+  AppStackParamList,
+  "Settings"
+>;
 
 const SettingsScreen: React.FC = () => {
+  const navigation = useNavigation<SettingsScreenNavigationProp>();
+
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-      alert("Signed out successfully!");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Welcome" }], // Reset to the Welcome screen
+      });
+      // alert("Signed out successfully!");
     } catch (error) {
       console.error("Error signing out:", error);
       alert("Unable to sign out at this time.");

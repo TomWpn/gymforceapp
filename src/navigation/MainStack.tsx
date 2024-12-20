@@ -5,17 +5,35 @@ import UserDetailsScreen from "../screens/UserDetailsScreen";
 import EmployerSelectionScreen from "../screens/EmployerSelectionScreen";
 import GymSelectionScreen from "../screens/GymSelectionScreen";
 import BottomTabs from "../components/BottomTabs";
+import WelcomeScreen from "../screens/WelcomeScreen";
+import SignUpScreen from "../screens/SignUpScreen";
+import LoginScreen from "../screens/LoginScreen";
 
 const Stack = createStackNavigator<AppStackParamList>();
 
 const MainStack = ({
-  initialRoute = "BottomTabs",
+  initialRoute = "Welcome",
   initialRouteParams = {},
 }: {
   initialRoute?: keyof AppStackParamList;
   initialRouteParams?: object;
 }) => (
   <Stack.Navigator initialRouteName={initialRoute}>
+    <Stack.Screen
+      name="Welcome"
+      component={WelcomeScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="SignUp"
+      component={SignUpScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="Login"
+      component={LoginScreen}
+      options={{ headerShown: false }}
+    />
     {/* Bottom Tabs */}
     <Stack.Screen
       name="BottomTabs"

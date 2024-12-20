@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userProfileService";
-import AuthStack from "./AuthStack";
 import MainStack from "./MainStack";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 import { getIncompleteProfileFields } from "../utils/profileUtils";
 import { UserProfile } from "../types";
+import { useNavigationContainerRef } from "@react-navigation/native";
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -14,6 +14,7 @@ const AppContent = () => {
   const [incompleteFields, setIncompleteFields] = useState<string[] | null>(
     null
   );
+  const navigationRef = useNavigationContainerRef(); // Navigation reference for resetting stack
 
   const [fontsLoaded] = useFonts({
     Gymforce: require("../../assets/fonts/VTFRedzone-Classic.ttf"),
@@ -35,6 +36,16 @@ const AppContent = () => {
     fetchProfile();
   }, [user]);
 
+  // Reset navigation stack when the user signs out
+  useEffect(() => {
+    if (!user && navigationRef.isReady()) {
+      navigationRef.reset({
+        index: 0,
+        routes: [{ name: "Welcome" }], // Reset to the Welcome screen
+      });
+    }
+  }, [user, navigationRef]);
+
   if (loading || !fontsLoaded || (user && !profile)) {
     return (
       <View style={styles.loaderContainer}>
@@ -43,16 +54,16 @@ const AppContent = () => {
     );
   }
 
+  // Render Welcome if user is not signed in
   if (!user) {
-    console.log("User is not authenticated.");
-    return <AuthStack initialScreen="Welcome" />;
+    return <MainStack initialRoute="Welcome" />;
   }
 
+  // Redirect based on profile completeness
   if (incompleteFields && incompleteFields.length > 0) {
     const firstIncompleteField = incompleteFields[0];
     switch (firstIncompleteField) {
       case "address":
-        console.log("Redirecting to address screen.");
         return (
           <MainStack
             initialRoute="UserDetails"
@@ -60,7 +71,6 @@ const AppContent = () => {
           />
         );
       case "employer":
-        console.log("Redirecting to employer screen.");
         return (
           <MainStack
             initialRoute="EmployerSelection"
@@ -68,7 +78,6 @@ const AppContent = () => {
           />
         );
       case "gym":
-        console.log("Redirecting to gym screen.");
         return (
           <MainStack
             initialRoute="GymSelection"
@@ -76,7 +85,6 @@ const AppContent = () => {
           />
         );
       default:
-        console.log("Redirecting to user details screen.");
         return (
           <MainStack
             initialRoute="UserDetails"
