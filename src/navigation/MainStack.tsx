@@ -34,13 +34,11 @@ const MainStack = ({
       component={LoginScreen}
       options={{ headerShown: false }}
     />
-    {/* Bottom Tabs */}
     <Stack.Screen
       name="BottomTabs"
       component={BottomTabs}
       options={{ headerShown: false }}
     />
-    {/* UserDetails */}
     <Stack.Screen
       name="UserDetails"
       component={UserDetailsScreen}
@@ -49,7 +47,6 @@ const MainStack = ({
         initialRoute === "UserDetails" ? initialRouteParams : undefined
       }
     />
-    {/* EmployerSelection */}
     <Stack.Screen
       name="EmployerSelection"
       component={EmployerSelectionScreen}
@@ -58,7 +55,6 @@ const MainStack = ({
         initialRoute === "EmployerSelection" ? initialRouteParams : undefined
       }
     />
-    {/* GymSelection */}
     <Stack.Screen
       name="GymSelection"
       component={GymSelectionScreen}

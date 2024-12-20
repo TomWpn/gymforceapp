@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getUserProfile } from "../services/userProfileService";
 import MainStack from "./MainStack";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 import { getIncompleteProfileFields } from "../utils/profileUtils";
 import { UserProfile } from "../types";
-import { useNavigationContainerRef } from "@react-navigation/native";
+import { getUserProfile } from "../services/userProfileService";
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -14,7 +13,6 @@ const AppContent = () => {
   const [incompleteFields, setIncompleteFields] = useState<string[] | null>(
     null
   );
-  const navigationRef = useNavigationContainerRef(); // Navigation reference for resetting stack
 
   const [fontsLoaded] = useFonts({
     Gymforce: require("../../assets/fonts/VTFRedzone-Classic.ttf"),
@@ -26,25 +24,17 @@ const AppContent = () => {
       if (user) {
         const fetchedProfile = await getUserProfile(user.uid);
         setProfile(fetchedProfile || ({} as UserProfile));
-        const incompleteFields = getIncompleteProfileFields(
-          fetchedProfile || ({} as UserProfile)
+        setIncompleteFields(
+          getIncompleteProfileFields(fetchedProfile || ({} as UserProfile))
         );
-        setIncompleteFields(incompleteFields);
+      } else {
+        setProfile(null);
+        setIncompleteFields(null);
       }
     };
 
     fetchProfile();
   }, [user]);
-
-  // Reset navigation stack when the user signs out
-  useEffect(() => {
-    if (!user && navigationRef.isReady()) {
-      navigationRef.reset({
-        index: 0,
-        routes: [{ name: "Welcome" }], // Reset to the Welcome screen
-      });
-    }
-  }, [user, navigationRef]);
 
   if (loading || !fontsLoaded || (user && !profile)) {
     return (
@@ -54,12 +44,12 @@ const AppContent = () => {
     );
   }
 
-  // Render Welcome if user is not signed in
+  // If the user is not authenticated, show the Welcome screen
   if (!user) {
     return <MainStack initialRoute="Welcome" />;
   }
 
-  // Redirect based on profile completeness
+  // If the profile has incomplete fields, redirect to the first missing field
   if (incompleteFields && incompleteFields.length > 0) {
     const firstIncompleteField = incompleteFields[0];
     switch (firstIncompleteField) {
@@ -94,7 +84,8 @@ const AppContent = () => {
     }
   }
 
-  return <MainStack />;
+  // If authenticated and profile is complete, navigate to the main app (Dashboard)
+  return <MainStack initialRoute="BottomTabs" />;
 };
 
 export default AppContent;

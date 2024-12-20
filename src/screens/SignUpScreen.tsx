@@ -51,6 +51,7 @@ const SignUpScreen = () => {
       );
       const user = userCredential.user;
       setUser(user); // Update context
+      navigation.navigate("UserDetails", { mode: "signup" });
     } catch (error: any) {
       const errorMessage = error.message.includes("auth/email-already-in-use")
         ? "This email is already in use."
@@ -58,7 +59,6 @@ const SignUpScreen = () => {
       Alert.alert("Signup Error", errorMessage);
     } finally {
       setLoading(false);
-      navigation.navigate("UserDetails", { mode: "signup" });
     }
   };
 
