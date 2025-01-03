@@ -1,0 +1,28 @@
+{
+  "cli": {
+    "version": ">= 14.2.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview"
+    },
+    "production": {
+      "android": {
+        "gradleCommand": ":app:assembleRelease",
+        "autoIncrement": true,
+        "applicationArchivePath": "android/app/build/outputs/apk/release/app-release.apk"
+      },
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

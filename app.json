@@ -5,25 +5,57 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gymforce.app",
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.gymforce.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font"],
-    "assetBundlePatterns": ["assets/fonts/*"]
+    "plugins": [
+      "expo-font"
+    ],
+    "assetBundlePatterns": [
+      "assets/fonts/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "46f37ab1-8f70-4714-86f4-dffa5970c759"
+      },
+      "firebaseApiKey": "@env:FIREBASE_API_KEY",
+      "firebaseAuthDomain": "@env:FIREBASE_AUTH_DOMAIN",
+      "firebaseProjectId": "@env:FIREBASE_PROJECT_ID",
+      "firebaseStorageBucket": "@env:FIREBASE_STORAGE_BUCKET",
+      "firebaseMessagingSenderId": "@env:FIREBASE_MESSAGING_SENDER_ID",
+      "firebaseAppId": "@env:FIREBASE_APP_ID",
+      "firebaseMeasurementId": "@env:FIREBASE_MEASUREMENT_ID",
+      "firebaseFunctionHostUrl": "@env:FIREBASE_FUNCTION_HOST_URL",
+      "googleMapsApiKey": "@env:GOOGLE_MAPS_API_KEY"
+    },
+    "androidStatusBar": {
+      "translucent": true
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/46f37ab1-8f70-4714-86f4-dffa5970c759"
+    }
   }
 }

@@ -1,10 +1,15 @@
+const { getDefaultConfig } = require("expo/metro-config");
 const {
   wrapWithReanimatedMetroConfig,
 } = require("react-native-reanimated/metro-config");
-const { getDefaultConfig } = require("expo/metro-config");
 
+// Extend the default Expo Metro configuration
 const defaultConfig = getDefaultConfig(__dirname);
 
-defaultConfig.resolver.assetExts.push("ttf"); // Ensure .ttf is supported
+// Ensure custom asset types (e.g., .ttf) are supported
+defaultConfig.resolver.assetExts.push("ttf");
 
-module.exports = wrapWithReanimatedMetroConfig(defaultConfig);
+// Wrap with Reanimated Metro Config
+const customConfig = wrapWithReanimatedMetroConfig(defaultConfig);
+
+module.exports = customConfig;
