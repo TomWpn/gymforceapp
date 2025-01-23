@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GymForceApp",
-    "slug": "GymForceApp",
+    "name": "Gym Force",
+    "slug": "gym-force",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,36 +13,60 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.gymforce.app",
+      "bundleIdentifier": "app.gymforce.com",
       "infoPlist": {
         "UIViewControllerBasedStatusBarAppearance": true
       }
     },
     "android": {
-      "package": "com.gymforce.app",
+      "package": "app.gymforce.com",
       "versionCode": 1,
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ],
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.gymforce.app"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "extraPods": [
+              {
+                "name": "FirebaseAuth",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCore",
+                "modular_headers": true
+              },
+              {
+                "name": "FirebaseCoreInternal",
+                "modular_headers": true
+              },
+              {
+                "name": "GoogleUtilities",
+                "modular_headers": true
+              },
+              {
+                "name": "RecaptchaInterop",
+                "modular_headers": true
+              }
+            ]
+          }
+        }
+      ]
     ],
-    "assetBundlePatterns": [
-      "assets/fonts/*"
-    ],
+    "assetBundlePatterns": ["assets/fonts/*"],
     "extra": {
       "eas": {
-        "projectId": "46f37ab1-8f70-4714-86f4-dffa5970c759"
+        "projectId": "f6c829ba-b0a9-4241-9b01-ab0ce1c83fb8"
       },
       "firebaseApiKey": "@env:FIREBASE_API_KEY",
       "firebaseAuthDomain": "@env:FIREBASE_AUTH_DOMAIN",
@@ -61,7 +85,8 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/46f37ab1-8f70-4714-86f4-dffa5970c759"
-    }
+      "url": "https://u.expo.dev/f6c829ba-b0a9-4241-9b01-ab0ce1c83fb8"
+    },
+    "owner": "twashgymforce"
   }
 }

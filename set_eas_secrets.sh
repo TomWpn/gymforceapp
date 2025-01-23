@@ -16,7 +16,7 @@ create_or_update_eas_env_var() {
 
   # Create or overwrite the environment variable in EAS
   echo "Setting EAS environment variable: $name"
-  eas env:create preview --name "$name" --value "$value" --type string --visibility plaintext --force
+  eas env:create production --name "$name" --value "$value" --type string --visibility plaintext --force
 
   if [[ $? -ne 0 ]]; then
     echo "Failed to set environment variable: $name"

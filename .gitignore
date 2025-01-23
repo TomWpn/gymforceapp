@@ -82,3 +82,5 @@ yarn-error.*
 # @end expo-cli
 
 android/
+
+.idea

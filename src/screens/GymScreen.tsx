@@ -75,13 +75,15 @@ const GymScreen: React.FC = () => {
             key: "checkInHistory",
             render: () => (
               <>
-                <GymForceText type="Title" color="primary">
-                  Check-In History
-                </GymForceText>
-                <Padding horizontal size={32}>
-                  <CheckInHistoryCard />
+                <Padding vertical size={16}>
+                  <GymForceText type="Title" color="primary">
+                    Check-In History
+                  </GymForceText>
+                  <Padding horizontal size={32}>
+                    <CheckInHistoryCard />
+                  </Padding>
+                  <FlexibleSpacer bottom size={20} />
                 </Padding>
-                <FlexibleSpacer bottom size={20} />
               </>
             ),
           },
