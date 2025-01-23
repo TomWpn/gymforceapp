@@ -88,7 +88,7 @@ export const searchEmployersInHubSpot = async (query: string) => {
     const headers = await getHubSpotHeaders(); // Retrieve headers with the async token
     const response = await axios.post(
       `${HUBSPOT_BASE_URL}/search`,
-      { filterGroups, properties },
+      { filterGroups, properties, limit: 200 },
       { headers }
     );
 
@@ -145,7 +145,7 @@ export const getFacilitiesFromHubSpot = async (
     const headers = await getHubSpotHeaders(); // Retrieve headers with the async token
     const response = await axios.post(
       `${HUBSPOT_BASE_URL}/search`,
-      { filterGroups, properties },
+      { filterGroups, properties, limit: 200 },
       { headers }
     );
 
@@ -275,6 +275,7 @@ export const createCompanyInHubSpot = async (companyData: {
       {
         filterGroups,
         properties: ["name", "address", "city", "state", "zip", "id"],
+        limit: 200,
       },
       { headers }
     );

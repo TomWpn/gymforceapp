@@ -29,5 +29,12 @@ module.exports = {
     indent: ["error", 2],
     "quote-props": 0, // Ensures consistent quoting of properties
     "object-curly-spacing": 0, // No spaces inside braces
+    "@typescript-eslint/no-unused-expressions": [
+      "error",
+      {
+        allowShortCircuit: true,
+        allowTernary: true,
+      },
+    ],
   },
 };
