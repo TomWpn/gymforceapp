@@ -24,6 +24,9 @@
         "autoIncrement": true,
         "applicationArchivePath": "android/app/build/outputs/apk/release/app-release.apk"
       },
+      "ios": {
+        "autoIncrement": true
+      },
       "channel": "production"
     }
   },

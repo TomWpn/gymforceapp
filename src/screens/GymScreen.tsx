@@ -57,20 +57,20 @@ const GymScreen: React.FC = () => {
               />
             ),
           },
-          // {
-          //   key: "chatButton",
-          //   render: () => (
-          //     <View style={styles.chatButtonContainer}>
-          //       <FlexibleSpacer bottom size={20} />
-          //       <GymForceButton
-          //         title="Send Owner a Message"
-          //         onPress={() => setChatVisible(true)}
-          //         variant="primary"
-          //       />
-          //       <FlexibleSpacer bottom size={20} />
-          //     </View>
-          //   ),
-          // },
+          {
+            key: "chatButton",
+            render: () => (
+              <View style={styles.chatButtonContainer}>
+                <FlexibleSpacer bottom size={20} />
+                <GymForceButton
+                  title="Send Owner a Message"
+                  onPress={() => setChatVisible(true)}
+                  variant="primary"
+                />
+                <FlexibleSpacer bottom size={20} />
+              </View>
+            ),
+          },
           {
             key: "checkInHistory",
             render: () => (
