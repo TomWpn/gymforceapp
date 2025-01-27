@@ -97,6 +97,7 @@ const SignUpScreen = () => {
                   onChangeText={setPassword}
                   secureTextEntry={!passwordVisible}
                   autoCapitalize="none"
+                  textContentType="none" // Explicitly disable suggestions/autofill
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!passwordVisible)}
