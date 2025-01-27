@@ -77,7 +77,9 @@ const LoginScreen = () => {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            textContentType="emailAddress" // Use "emailAddress" for semantic correctness
           />
+
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
@@ -87,6 +89,7 @@ const LoginScreen = () => {
               onChangeText={setPassword}
               secureTextEntry={!passwordVisible}
               autoCapitalize="none"
+              textContentType="none" // Explicitly disable suggestions/autofill
             />
             <TouchableOpacity
               onPress={() => setPasswordVisible(!passwordVisible)}

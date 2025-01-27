@@ -43,17 +43,14 @@ export default CardWithIconBackground;
 
 const styles = StyleSheet.create({
   card: {
-    padding: 20,
-    marginVertical: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
+    padding: 15,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-    position: "relative",
-    overflow: "hidden",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
   },
   backgroundIcon: {
     position: "absolute",

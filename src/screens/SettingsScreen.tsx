@@ -62,7 +62,7 @@ export default SettingsScreen;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#f5f5f5",
   },
   cardContainer: {
     marginBottom: 20,

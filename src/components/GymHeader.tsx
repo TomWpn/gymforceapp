@@ -55,7 +55,7 @@ const GymHeader: React.FC<GymHeaderProps> = ({
       source={{ uri: backgroundImageUrl || defaultImageUrl }}
       style={[styles.headerBackground, style]}
     >
-      <Padding horizontal size={32}>
+      <Padding horizontal size={16}>
         <GymCard />
       </Padding>
       {/* <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
