@@ -11,9 +11,7 @@ export type AppStackParamList = {
   EmployerSelection: { mode?: "signup" | "edit" } | undefined;
   GymSelection: { mode?: "signup" | "edit" } | undefined;
   UserDetails: { mode?: "signup" | "edit" } | undefined;
-  BottomTabs:
-    | { screen?: "Dashboard" | "Gyms" | "Employer" | "Settings" }
-    | undefined;
+  Home: { screen?: "Dashboard" | "Gyms" | "Employer" | "Settings" } | undefined;
   Dashboard: undefined;
   Gyms: undefined;
   Employer: undefined;

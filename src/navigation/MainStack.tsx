@@ -35,7 +35,7 @@ const MainStack = ({
       options={{ headerShown: false }}
     />
     <Stack.Screen
-      name="BottomTabs"
+      name="Home"
       component={BottomTabs}
       options={{ headerShown: false }}
     />

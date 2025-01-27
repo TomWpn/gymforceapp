@@ -85,7 +85,7 @@ const AppContent = () => {
   }
 
   // If authenticated and profile is complete, navigate to the main app (Dashboard)
-  return <MainStack initialRoute="BottomTabs" />;
+  return <MainStack initialRoute="Home" />;
 };
 
 export default AppContent;

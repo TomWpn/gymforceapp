@@ -166,7 +166,7 @@ const GymSelectionScreen = () => {
       await refreshUserProfile();
       // Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
       if (mode === "signup") {
-        navigation.navigate("BottomTabs", { screen: "Gyms" });
+        navigation.navigate("Home", { screen: "Gyms" });
       } else {
         navigation.goBack();
       }
