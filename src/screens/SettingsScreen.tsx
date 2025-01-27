@@ -9,6 +9,7 @@ import { auth } from "../services/firebaseConfig";
 import { AppStackParamList } from "../navigation/AppStackParamList";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
+import DeleteAccountButton from "../components/DeleteAccountButton";
 
 type SettingsScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -53,6 +54,7 @@ const SettingsScreen: React.FC = () => {
         variant="tertiary"
         size="small"
       />
+      <DeleteAccountButton />
     </ScrollView>
   );
 };

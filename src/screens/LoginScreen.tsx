@@ -42,7 +42,6 @@ const LoginScreen = () => {
         email,
         password
       );
-      console.log("User logged in:", userCredential.user);
       setUser(userCredential.user);
     } catch (error: any) {
       Alert.alert("Login Error", error.message);

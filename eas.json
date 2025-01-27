@@ -20,9 +20,9 @@
     },
     "production": {
       "android": {
-        "gradleCommand": ":app:assembleRelease",
+        "gradleCommand": ":app:bundleRelease",
         "autoIncrement": true,
-        "applicationArchivePath": "android/app/build/outputs/apk/release/app-release.apk"
+        "applicationArchivePath": "android/app/build/outputs/bundle/release/app-release.aab"
       },
       "ios": {
         "autoIncrement": true

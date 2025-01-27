@@ -71,8 +71,6 @@ const GymReviewForm = ({
       ownerNote,
     };
 
-    // console.log("Submitting Review:", reviewData);
-
     try {
       await addGymReview(reviewData);
       // Alert.alert("Review Submitted", "Thank you for your review!");

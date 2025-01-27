@@ -9,9 +9,12 @@
     "eas:update:production": "eas update --channel production",
     "eas:update:development": "eas update --channel development",
     "eas:update:preview": "eas update --channel preview",
+    "eas:build:android": "eas build --platform android --profile production",
+    "eas:submit:android": "eas submit --platform android",
     "eas:build:ios": "eas build --platform ios --profile production",
     "eas:submit:ios": "eas submit --platform ios",
-    "eas:deploy:testflight": "npm run eas:build:ios && npm run eas:submit:ios"
+    "eas:deploy:testflight": "npm run eas:build:ios && npm run eas:submit:ios",
+    "eas:deploy:android": "npm run eas:build:android && npm run eas:submit:android"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.0",

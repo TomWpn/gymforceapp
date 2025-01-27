@@ -6,7 +6,7 @@ import GymForceText from "./GymForceText";
 interface GymForceButtonProps {
   title: string;
   onPress: any;
-  variant?: "primary" | "secondary" | "tertiary";
+  variant?: "primary" | "secondary" | "tertiary" | "destructive";
   size?: "small" | "large";
   disabled?: boolean;
   width?: DimensionValue | "auto";
@@ -27,6 +27,8 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
       ? "#1a265a"
       : variant === "secondary"
       ? "#f1600d"
+      : variant === "destructive"
+      ? "#FF0000"
       : "transparent";
   const fontSize = size === "large" ? 18 : 14;
   const paddingVertical = size === "large" ? 18 : 12;
