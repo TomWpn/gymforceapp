@@ -15,7 +15,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "app.gymforce.com",
       "infoPlist": {
-        "UIViewControllerBasedStatusBarAppearance": true
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby results.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location to provide personalized services."
       }
     },
     "android": {
