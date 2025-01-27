@@ -77,7 +77,9 @@ const LoginScreen = () => {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
-            textContentType="emailAddress" // Use "emailAddress" for semantic correctness
+            textContentType="none" // Explicitly disable autofill for this field
+            autoCorrect={false}
+            autoComplete="off"
           />
 
           <View style={styles.passwordContainer}>

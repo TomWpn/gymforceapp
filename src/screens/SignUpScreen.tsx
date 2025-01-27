@@ -87,6 +87,9 @@ const SignUpScreen = () => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor="#888"
+                textContentType="none" // Explicitly disable autofill for this field
+                autoCorrect={false}
+                autoComplete="off"
               />
               <View style={styles.passwordContainer}>
                 <TextInput
