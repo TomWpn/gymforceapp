@@ -32,11 +32,26 @@ const createEmailContent = (
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GymForce - New Membership Interest</title>
+    <title>Gym Force® - New Membership Interest</title>
     <style type="text/css">
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f5f5f5; }
+        @font-face {
+            font-family: 'VTFRedzone';
+            src: url('https://gymforce.app/assets/fonts/VTFRedzone-Classic.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'OpenSans';
+            src: url('https://gymforce.app/assets/fonts/OpenSans-VariableFont_wdth,wght.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body { font-family: 'OpenSans', sans-serif; line-height: 1.6; color: #333333; background-color: #f5f5f5; }
+        h1, h2 { font-family: 'VTFRedzone', sans-serif; }
+        .gym-force { font-family: 'VTFRedzone', sans-serif; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
         .header { background-color: #1a265a; padding: 30px 20px; text-align: center; color: #ffffff; }
+        .header img { width: 120px; height: auto; margin-bottom: 15px; }
         .content { padding: 30px 20px; background-color: #ffffff; }
         .highlight { color: #f1600d; font-weight: bold; }
         .contact-info { margin-top: 25px; padding: 20px; background-color: #f9f9f9; border-radius: 5px; border-left: 4px solid #1a265a; }
@@ -46,12 +61,13 @@ const createEmailContent = (
 <body>
     <div class="container">
         <div class="header">
+            <img src="https://gymforce.app/assets/images/badge.png" alt="Gym Force® Logo">
             <h1>New Membership Interest</h1>
-            <p>via GymForce</p>
+            <p>via <span class="gym-force">Gym Force®</span></p>
         </div>
 
         <div class="content">
-            <p>A potential member has expressed interest in joining <span class="highlight">${gymName}</span> through the GymForce app.</p>
+            <p>A potential member has expressed interest in joining <span class="highlight">${gymName}</span> through the <span class="gym-force">Gym Force®</span> app.</p>
             
             <div class="contact-info">
                 <h2>Contact Information</h2>
@@ -71,8 +87,8 @@ const createEmailContent = (
                 <ol style="text-align: left; margin-bottom: 25px; padding-left: 25px;">
                     <li style="margin-bottom: 10px;">Reach out to discuss membership options</li>
                     <li style="margin-bottom: 10px;">Once they become a member, click the verification button below</li>
-                    <li style="margin-bottom: 10px;">Their membership will be automatically verified in the GymForce system</li>
-                    <li style="margin-bottom: 10px;">They can immediately start using all GymForce features</li>
+                    <li style="margin-bottom: 10px;">Their membership will be automatically verified in the <span class="gym-force">Gym Force®</span> system</li>
+                    <li style="margin-bottom: 10px;">They can immediately start using all <span class="gym-force">Gym Force®</span> features</li>
                 </ol>
                 <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
                     <p style="margin-bottom: 15px; font-size: 14px;">Click the button below to instantly verify their membership:</p>
@@ -99,7 +115,7 @@ const createEmailContent = (
         </div>
 
         <div class="footer" style="margin-top: 40px;">
-            <p>Sent via GymForce</p>
+            <p>Sent via <span class="gym-force">Gym Force®</span></p>
             <p>Connecting People to Great Gyms</p>
         </div>
     </div>
@@ -235,7 +251,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
 
       console.log("Sending email");
       const info = await transporter.sendMail({
-        from: `GymForce <${EMAIL_USER.value()}>`,
+        from: `Gym Force® <${EMAIL_USER.value()}>`,
         to: contactEmail,
         subject: emailSubject,
         html: emailContent,

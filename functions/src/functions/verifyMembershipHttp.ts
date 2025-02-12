@@ -8,11 +8,20 @@ const renderPage = (title: string, message: string, isError = false) => `
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GymForce - ${title}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Gym Force® - ${title}</title>
     <style>
+        @font-face {
+            font-family: 'VTFRedzone';
+            src: url('https://gymforce.app/assets/fonts/VTFRedzone-Classic.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'OpenSans';
+            src: url('https://gymforce.app/assets/fonts/OpenSans-VariableFont_wdth,wght.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
             --navy: #1a265a;
             --orange: #f1600d;
@@ -20,8 +29,8 @@ const renderPage = (title: string, message: string, isError = false) => `
             --error-red: #dc3545;
             --success-green: #28a745;
         }
-        body { 
-            font-family: 'Inter', sans-serif;
+        body {
+            font-family: 'OpenSans', sans-serif;
             line-height: 1.6;
             color: #333;
             margin: 0;
@@ -30,6 +39,12 @@ const renderPage = (title: string, message: string, isError = false) => `
             display: flex;
             flex-direction: column;
             background: var(--light-navy);
+        }
+        .gym-force {
+            font-family: 'VTFRedzone', sans-serif;
+        }
+        h1 {
+            font-family: 'VTFRedzone', sans-serif;
         }
         .container {
             max-width: 600px;
@@ -113,7 +128,7 @@ const renderPage = (title: string, message: string, isError = false) => `
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://gymforce.app/assets/logo.png" alt="GymForce Logo">
+            <img src="https://gymforce.app/assets/images/badge.png" alt="Gym Force® Logo">
         </div>
         <div class="header">
             <div class="status-icon">
@@ -129,11 +144,11 @@ const renderPage = (title: string, message: string, isError = false) => `
             ${message}
         </div>
         <div style="text-align: center;">
-            <a href="https://gymforce.app" class="button">Return to GymForce</a>
+            <a href="https://gymforce.app" class="button">Return to <span class="gym-force">Gym Force®</span></a>
         </div>
     </div>
     <div class="footer">
-        <p>© ${new Date().getFullYear()} GymForce. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} <span class="gym-force">Gym Force®</span>. All rights reserved.</p>
     </div>
 </body>
 </html>
