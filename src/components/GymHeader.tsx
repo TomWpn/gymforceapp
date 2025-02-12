@@ -7,19 +7,19 @@ import {
   ViewStyle,
   TouchableOpacity,
 } from "react-native";
-import GymForceText from "./GymForceText"; // Adjust the import path as needed
-import { Ionicons } from "@expo/vector-icons"; // Adjust the import path if not using Expo
-import GymCard from "./GymCard";
+import GymForceText from "./GymForceText";
+import { Ionicons } from "@expo/vector-icons";
 import Padding from "./Padding";
 
 interface GymHeaderProps {
   name: string;
   backgroundImageUrl?: string;
   defaultImageUrl?: string;
-  rating?: number; // Gym rating (optional)
-  totalReviews?: number; // Total number of reviews
-  style?: StyleProp<ViewStyle>; // Customizable styles for the header container
-  onRatePress?: () => void; // Optional handler when the rating is pressed
+  rating?: number;
+  totalReviews?: number;
+  style?: StyleProp<ViewStyle>;
+  onRatePress?: () => void;
+  children?: React.ReactNode;
 }
 
 const GymHeader: React.FC<GymHeaderProps> = ({
@@ -30,10 +30,11 @@ const GymHeader: React.FC<GymHeaderProps> = ({
   totalReviews = 0,
   style,
   onRatePress,
+  children,
 }) => {
   const renderStars = () => {
-    const fullStars = Math.floor(rating); // Number of full stars
-    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75; // Check for half-star
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.25 && rating % 1 < 0.75;
 
     return Array.from({ length: 5 }, (_, index) => {
       if (index < fullStars) {
@@ -56,7 +57,7 @@ const GymHeader: React.FC<GymHeaderProps> = ({
       style={[styles.headerBackground, style]}
     >
       <Padding horizontal size={16}>
-        <GymCard />
+        {children}
       </Padding>
       {/* <TouchableOpacity style={styles.ratingContainer} onPress={onRatePress}>
           <View style={styles.starsRow}>{renderStars()}</View>
@@ -81,13 +82,13 @@ const GymHeader: React.FC<GymHeaderProps> = ({
 
 const styles = StyleSheet.create({
   headerBackground: {
-    height: 300,
+    height: 400,
     justifyContent: "center",
     alignItems: "center",
   },
   headerOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Overlay with transparency
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   headerContent: {
     padding: 16,
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 5, // Shadow for Android
+    elevation: 5,
     margin: "auto",
   },
   gymName: {

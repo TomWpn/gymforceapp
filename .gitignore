@@ -85,3 +85,7 @@ android/
 
 .idea
 gymforceapp-778e1-93a6338c95fe.json
+build-1738098400314.ipa
+.firebase/logs/vsce-debug.log
+functions/.env.gymforceapp-778e1
+functions/firebase-debug.log

@@ -6,6 +6,9 @@ import { getCompanyByIdSecondGen } from "./functions/getCompanyByIdSecondGen";
 import { onGymReviewCreated } from "./functions/onGymReviewCreated";
 import { onGymReviewUpdated } from "./functions/onGymReviewUpdated";
 import { createCompanySecondGen } from "./functions/createCompanySecondGen";
+import { handleMembershipInterest } from "./functions/handleMembershipInterest";
+import { claimMembership } from "./functions/claimMembership";
+import { verifyMembershipHttp } from "./functions/verifyMembershipHttp";
 
 // locate all functions closest to users
 setGlobalOptions({ region: "us-central1" });
@@ -15,3 +18,6 @@ exports.getCompanyByIdSecondGen = getCompanyByIdSecondGen;
 exports.onGymReviewCreated = onGymReviewCreated;
 exports.onGymReviewUpdated = onGymReviewUpdated;
 exports.createCompanySecondGen = createCompanySecondGen;
+exports.handleMembershipInterest = handleMembershipInterest;
+exports.claimMembership = claimMembership;
+exports.verifyMembershipHttp = verifyMembershipHttp;

@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, StyleSheet, ActivityIndicator, FlatList } from "react-native";
 import GymForceText from "../components/GymForceText";
 import GymHeader from "../components/GymHeader";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
 import ExpandableText from "../components/ExpandableText";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import GymForceButton from "../components/GymForceButton";
 import { useUserProfileContext } from "../context/UserProfileContext";
 import { useGymData } from "../hooks/useGymData";
 import { auth } from "../services/firebaseConfig";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import Padding from "../components/Padding";
 import GymChatModal from "../components/GymChatModal";
+import GymCard from "../components/GymCard";
 
 const GymScreen: React.FC = () => {
   const { userProfile } = useUserProfileContext();
-  const [isChatVisible, setChatVisible] = useState(false);
+  const [isChatVisible, setChatVisible] = React.useState(false);
 
   const gymId = userProfile?.gym?.id ?? null;
   const { gymData, loading, error, fetchGymData } = useGymData(gymId);
@@ -54,37 +54,23 @@ const GymScreen: React.FC = () => {
                 }
                 rating={gymData?.averageRating || 0}
                 totalReviews={gymData?.totalReviews || 0}
-              />
+              >
+                <GymCard requireAttestation={true} />
+              </GymHeader>
             ),
           },
-          // {
-          //   key: "chatButton",
-          //   render: () => (
-          //     <View style={styles.chatButtonContainer}>
-          //       <FlexibleSpacer bottom size={20} />
-          //       <GymForceButton
-          //         title="Send Owner a Message"
-          //         onPress={() => setChatVisible(true)}
-          //         variant="primary"
-          //       />
-          //       <FlexibleSpacer bottom size={20} />
-          //     </View>
-          //   ),
-          // },
           {
             key: "checkInHistory",
             render: () => (
-              <>
-                <Padding vertical size={16}>
-                  <GymForceText type="Title" color="primary">
-                    Check-In History
-                  </GymForceText>
-                  <Padding horizontal size={32}>
-                    <CheckInHistoryCard />
-                  </Padding>
-                  <FlexibleSpacer bottom size={20} />
+              <Padding vertical size={16}>
+                <GymForceText type="Title" color="primary">
+                  Check-In History
+                </GymForceText>
+                <Padding horizontal size={32}>
+                  <CheckInHistoryCard />
                 </Padding>
-              </>
+                <FlexibleSpacer bottom size={20} />
+              </Padding>
             ),
           },
           {
@@ -157,8 +143,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
     textAlign: "center",
-  },
-  chatButtonContainer: {
-    padding: 16,
   },
 });
