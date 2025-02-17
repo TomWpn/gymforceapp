@@ -1,6 +1,6 @@
 // GymForceButton.tsx
 import React from "react";
-import { Pressable, DimensionValue } from "react-native";
+import { Pressable, DimensionValue, ActivityIndicator } from "react-native";
 import GymForceText from "./GymForceText";
 
 interface GymForceButtonProps {
@@ -11,6 +11,7 @@ interface GymForceButtonProps {
   disabled?: boolean;
   width?: DimensionValue | "auto";
   fullWidth?: boolean;
+  loading?: boolean;
 }
 
 const GymForceButton: React.FC<GymForceButtonProps> = ({
@@ -21,6 +22,7 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
   disabled = false,
   width = "auto",
   fullWidth = false,
+  loading = false,
 }) => {
   const backgroundColor =
     variant === "primary"
@@ -55,16 +57,20 @@ const GymForceButton: React.FC<GymForceButtonProps> = ({
         ...(disabled ? { opacity: 0.5 } : {}),
       }}
     >
-      <GymForceText
-        style={{
-          color: variant === "tertiary" ? "black" : "white",
-          fontSize,
-          fontFamily: "Gymforce",
-          textAlign: "center",
-        }}
-      >
-        {title}
-      </GymForceText>
+      {loading ? (
+        <ActivityIndicator color={variant === "tertiary" ? "black" : "white"} />
+      ) : (
+        <GymForceText
+          style={{
+            color: variant === "tertiary" ? "black" : "white",
+            fontSize,
+            fontFamily: "Gymforce",
+            textAlign: "center",
+          }}
+        >
+          {title}
+        </GymForceText>
+      )}
     </Pressable>
   );
 };

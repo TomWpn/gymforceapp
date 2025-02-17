@@ -17,6 +17,10 @@ export type AppStackParamList = {
   Employer: undefined;
   Settings: undefined;
   GymReviews: { gymId: string };
+  GymScreen: {
+    gymId: string;
+    showMembershipInterest?: boolean;
+  };
 };
 
 // Define navigation prop types

@@ -3,7 +3,6 @@ import {
   SectionList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   View,
   ImageBackground,
   Image,
@@ -17,8 +16,8 @@ import {
   getUserProfile,
   updateUserProfileWithCompany,
 } from "../services/userProfileService";
+import { checkMembershipInterestStatus } from "../services/membershipService";
 import { auth } from "../services/firebaseConfig";
-// import Slider from "@react-native-community/slider";
 import { Address, GroupedCompanies, Company, Gym } from "../types";
 import GymForceButton from "../components/GymForceButton";
 import GymForceText from "../components/GymForceText";
@@ -45,7 +44,7 @@ const GymSelectionScreen = () => {
   const [sourceLocation, setSourceLocation] = useState<
     "employer" | "home" | "current" | null
   >(null);
-  const [range, setRange] = useState(20);
+  const [range, setRange] = useState(25);
   const [groupedCompanies, setGroupedCompanies] = useState<GroupedCompanies>(
     {}
   );
@@ -60,10 +59,7 @@ const GymSelectionScreen = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       const uid = auth.currentUser?.uid;
-      if (!uid) {
-        // Alert.alert("Error", "User not authenticated");
-        return;
-      }
+      if (!uid) return;
 
       const userProfile = await getUserProfile(uid);
       if (userProfile) {
@@ -79,10 +75,7 @@ const GymSelectionScreen = () => {
 
   const getCurrentLocation = async (): Promise<Address | null> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      // Alert.alert("Permission denied", "Unable to access current location.");
-      return null;
-    }
+    if (status !== "granted") return null;
     const location = await Location.getCurrentPositionAsync({});
     return {
       coordinates: {
@@ -109,28 +102,32 @@ const GymSelectionScreen = () => {
     }
 
     if (!location) {
-      // Alert.alert("Error", "Unable to determine source location.");
       setLoading(false);
       return;
     }
 
     try {
-      const facilities = await fetchGyms(location.lat, location.lng, range);
-      await handleFetchNonNetworkGyms(
-        location.lat,
-        location.lng,
-        range * METER_CONVERSION_FACTOR
-      );
+      const [facilities] = await Promise.all([
+        fetchGyms(location.lat, location.lng, range),
+        handleFetchNonNetworkGyms(
+          location.lat,
+          location.lng,
+          range * METER_CONVERSION_FACTOR
+        ),
+      ]);
       setGroupedCompanies(facilities);
     } catch (error) {
       console.error("Error fetching gyms:", error);
-      // Alert.alert("Error", "Could not fetch gyms at this time.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFetchNonNetworkGyms = async (lat: any, lng: any, range: any) => {
+  const handleFetchNonNetworkGyms = async (
+    lat: number,
+    lng: number,
+    range: number
+  ) => {
     const offNetworkGyms = await fetchNonNetworkGyms(lat, lng, range);
     setNonNetworkGyms(offNetworkGyms);
   };
@@ -152,34 +149,38 @@ const GymSelectionScreen = () => {
 
   const handleSelectGym = async (gym: Gym) => {
     const uid = auth.currentUser?.uid;
-    if (!uid) {
-      // Alert.alert("Error", "User not authenticated");
-      return;
-    }
+    if (!uid) return;
 
     try {
-      if (!gym.isOnNetwork) {
-        // add to hubspot
-        gym = await createCompanyInHubSpot(gym);
-      }
-      await updateUserProfileWithCompany(uid, gym, "gym");
+      const updatedGym = !gym.isOnNetwork
+        ? await createCompanyInHubSpot(gym)
+        : gym;
+
+      await updateUserProfileWithCompany(uid, updatedGym, "gym");
       await refreshUserProfile();
-      // Alert.alert("Success", `Gym selected: ${gym.properties.name}`);
-      if (mode === "signup") {
-        navigation.navigate("Home", { screen: "Gyms" });
-      } else {
-        navigation.goBack();
+
+      // Skip attestation for non-network gyms
+      if (!gym.isOnNetwork) {
+        mode === "signup"
+          ? navigation.navigate("Home", { screen: "Gyms" })
+          : navigation.goBack();
+        return;
       }
+
+      // Navigate to GymScreen for network gyms to handle attestation
+      navigation.navigate("GymScreen", {
+        gymId: gym.id,
+        showMembershipInterest: true,
+      });
     } catch (error) {
       console.error("Error saving selected gym:", error);
-      // Alert.alert("Error", "Unable to save gym selection at this time.");
     }
   };
 
   const sections = [
     ...Object.keys(groupedCompanies).map((key) => ({
       title: key,
-      data: groupedCompanies[key],
+      data: [...groupedCompanies[key]].sort((a, b) => a.distance - b.distance),
       isOnNetwork: true,
     })),
     ...(Object.keys(groupedCompanies).length === 0 && nonNetworkGyms.length > 0
@@ -188,23 +189,39 @@ const GymSelectionScreen = () => {
             title: "Non - Network Gyms",
             subtitle:
               "If you'd like to join a gym that is not in the network, please select it here. You will not be able to earn rewards at these gyms.",
-            data: nonNetworkGyms,
+            data: [...nonNetworkGyms].sort((a, b) => a.distance - b.distance),
             isOnNetwork: false,
           },
         ]
       : []),
   ];
 
+  interface SectionHeader {
+    section: {
+      title: string;
+      isOnNetwork: boolean;
+      subtitle?: string;
+    };
+  }
+
   const renderSectionHeader = ({
     section: { title, isOnNetwork, subtitle },
-  }: any) =>
+  }: SectionHeader) =>
     !loading ? (
       <>
-        <GymForceText type="Title" color={isOnNetwork ? "#f1600d" : "#1a265a"}>
+        <GymForceText
+          style={styles.sectionListHeader}
+          type="Title"
+          color={isOnNetwork ? "#f1600d" : "#1a265a"}
+        >
           {title}
         </GymForceText>
         {subtitle && (
-          <GymForceText type="Subtitle" color="#666666">
+          <GymForceText
+            style={styles.sectionListHeaderSubtitle}
+            type="Subtitle"
+            color="#666666"
+          >
             {subtitle}
           </GymForceText>
         )}
@@ -219,101 +236,96 @@ const GymSelectionScreen = () => {
     section: { isOnNetwork: boolean };
   }) =>
     !loading ? (
-      <TouchableOpacity
-        style={styles.gymCard}
-        onPress={() => handleSelectGym(item as Gym)}
-      >
-        <NoMarginView>
-          <GymForceText type="Subtitle" color="#1a265a">
-            {item.properties.name}
-          </GymForceText>
-          <GymForceText type="Note" color="#666666">
-            {item.properties.address}
-            {item.properties.city}, {item.properties.state}
-          </GymForceText>
-          <GymForceText type="Note" color="#666666">
-            {item.distance.toFixed(2)} miles{" "}
-            {sourceLocation === "current"
-              ? "away"
-              : `from your ${sourceLocation}`}
-          </GymForceText>
-        </NoMarginView>
-        {/* Conditionally add logo for network gyms */}
-        {section.isOnNetwork && (
-          <NoMarginView>
-            <Image
-              source={require("../../assets/badge.png")} // Replace with your logo path
-              style={styles.logo}
-            />
-          </NoMarginView>
-        )}
-      </TouchableOpacity>
+      <Padding horizontal size={30}>
+        <TouchableOpacity
+          style={styles.gymCard}
+          onPress={() => handleSelectGym(item as Gym)}
+        >
+          <ImageBackground
+            source={
+              section.isOnNetwork
+                ? require("../../assets/badge.png")
+                : undefined
+            }
+            imageStyle={styles.itemBackgroundImage}
+          >
+            <NoMarginView style={styles.gymItemContentContainer}>
+              <GymForceText type="Subtitle" color="#1a265a">
+                {item.properties.name}
+              </GymForceText>
+              <GymForceText type="Note" color="#666666">
+                {item.properties.address}
+                {item.properties.city}, {item.properties.state}
+              </GymForceText>
+              <GymForceText type="Note" color="#666666">
+                {item.distance.toFixed(2)} miles{" "}
+                {sourceLocation === "current"
+                  ? "away"
+                  : `from your ${sourceLocation}`}
+              </GymForceText>
+            </NoMarginView>
+          </ImageBackground>
+        </TouchableOpacity>
+      </Padding>
     ) : null;
 
   return (
     <NoMarginView style={styles.container}>
-      <ImageBackground
-        source={{ uri: "https://gymforce.app/assets/images/kettlebell.jpeg" }}
-        style={styles.background}
-      >
-        <View style={styles.overlay} />
-
-        <NoMarginView>
-          <Padding size={20}>
-            <GymForceText type="Title" color="#1a265a">
-              Find Your Perfect Gym
-            </GymForceText>
-            <GymForceText
-              type="Subtitle"
-              color="#1a265a"
-              style={styles.subText}
-            >
-              Choose the location you'd like to search from:
-            </GymForceText>
-            <View style={styles.pillContainer}>
-              {["employer", "home", "current"].map((loc) => (
-                <TouchableOpacity
-                  key={loc}
-                  style={[
-                    styles.pill,
-                    sourceLocation === loc && styles.selectedPill,
-                  ]}
-                  onPress={() =>
-                    handleSourceChange(loc as "employer" | "home" | "current")
-                  }
+      <NoMarginView>
+        <Padding size={20}>
+          <GymForceText type="Title" color="#1a265a">
+            Find Your Perfect Gym
+          </GymForceText>
+          <GymForceText type="Subtitle" color="#1a265a" style={styles.subText}>
+            Choose the location you'd like to search from:
+          </GymForceText>
+          <View style={styles.pillContainer}>
+            {["employer", "home", "current"].map((loc) => (
+              <TouchableOpacity
+                key={loc}
+                style={[
+                  styles.pill,
+                  sourceLocation === loc && styles.selectedPill,
+                ]}
+                onPress={() =>
+                  handleSourceChange(loc as "employer" | "home" | "current")
+                }
+              >
+                <GymForceText
+                  type="Note"
+                  color={sourceLocation === loc ? "#ffffff" : "#1a265a"}
                 >
-                  <GymForceText
-                    type="Note"
-                    color={sourceLocation === loc ? "#ffffff" : "#1a265a"}
-                  >
-                    {loc === "employer"
-                      ? "Employer"
-                      : loc === "home"
-                      ? "Home"
-                      : "Current Location"}
-                  </GymForceText>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {loc === "employer"
+                    ? "Employer"
+                    : loc === "home"
+                    ? "Home"
+                    : "Current Location"}
+                </GymForceText>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-            <FlexibleSpacer bottom size={16} />
-            {loading && (
-              <GymForceText color="#1a265a">
-                Finding nearby gyms...
-              </GymForceText>
-            )}
-          </Padding>
-        </NoMarginView>
+          <FlexibleSpacer bottom size={16} />
+          {loading && (
+            <GymForceText color="#1a265a">Finding nearby gyms...</GymForceText>
+          )}
+        </Padding>
+      </NoMarginView>
+
+      {/* Scrollable Content */}
+      <NoMarginView style={styles.listContainer}>
         <SectionList
           sections={sections}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, section }) => renderGymItem({ item, section })} // Pass section
+          renderItem={({ item, section }) => renderGymItem({ item, section })}
           renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.sectionListContainer}
+          stickySectionHeadersEnabled
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+          SectionSeparatorComponent={() => <View style={{ height: 10 }} />}
         />
-      </ImageBackground>
+      </NoMarginView>
     </NoMarginView>
   );
 };
@@ -323,19 +335,10 @@ export default GymSelectionScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
+    backgroundColor: "#ffffff",
   },
-  background: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  listContainer: {
     width: "100%",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
   subText: {
     marginVertical: 10,
@@ -359,42 +362,38 @@ const styles = StyleSheet.create({
   selectedPill: {
     backgroundColor: "#1a265a",
   },
-  slider: {
-    width: "100%",
-    height: 40,
-    marginVertical: 10,
+  sectionListContainer: {
+    paddingBottom: 200,
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
   },
   gymCard: {
-    padding: 15,
-    marginVertical: 8,
     backgroundColor: "#ffffff",
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: "#ddd",
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-  },
-  sectionListContainer: {
-    paddingVertical: 10,
-    paddingBottom: 100,
-    paddingHorizontal: 32,
-  },
-  itemBackground: {
-    width: "100%",
-    height: 120,
-    borderRadius: 8,
+    borderColor: "#1a265a",
     overflow: "hidden",
   },
-  logo: {
-    width: 40,
-    height: 40,
-    resizeMode: "contain",
+  sectionListHeader: {
+    backgroundColor: "#ffffff",
+    paddingBottom: 8,
+    borderColor: "#1a265a",
+    borderBottomWidth: 1,
+  },
+  sectionListHeaderSubtitle: {
+    backgroundColor: "#ffffff",
+    padding: 8,
+    paddingHorizontal: 16,
+  },
+  gymItemContentContainer: {
+    padding: 16,
+  },
+  itemBackgroundImage: {
+    opacity: 1,
+    position: "absolute",
+    marginLeft: "85%",
+    marginBottom: "15%",
+    width: "15%",
   },
 });

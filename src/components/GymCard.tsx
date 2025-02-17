@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { logCheckIn } from "../services/checkInService";
@@ -15,11 +15,7 @@ import { useCheckInContext } from "../context/CheckInContext";
 import CheckInConfirmationModal from "./CheckInConfirmationModal";
 import NoMarginView from "./NoMarginView";
 import FlexibleSpacer from "./FlexibleSpacer";
-import {
-  sendMembershipInterest,
-  checkMembershipInterestStatus,
-  claimMembership,
-} from "../services/membershipService";
+import { useMembershipStatus } from "../hooks/useMembershipStatus";
 
 type GymSelectionNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -29,47 +25,162 @@ type GymSelectionNavigationProp = StackNavigationProp<
 interface GymCardProps {
   showCheckIn?: boolean;
   requireAttestation?: boolean;
+  gym?: any;
 }
 
+const NetworkGymContent: React.FC<{
+  gym: any;
+  onCheckIn: () => void;
+  onEditGym: () => void;
+  onGetDirections: () => void;
+  showCheckIn: boolean;
+  canCheckIn: boolean;
+}> = ({
+  gym,
+  onCheckIn,
+  onEditGym,
+  onGetDirections,
+  showCheckIn,
+  canCheckIn,
+}) => (
+  <View>
+    <NoMarginView>
+      <GymForceText type="Title" color="primary">
+        {gym.properties.name}
+      </GymForceText>
+      <GymForceText type="Note" color="#666666">
+        {gym.properties.address}, {gym.properties.city}, {gym.properties.state}
+      </GymForceText>
+      <FlexibleSpacer size={8} bottom />
+    </NoMarginView>
+
+    {showCheckIn && canCheckIn && (
+      <View style={styles.mainAction}>
+        <GymForceButton
+          fullWidth={true}
+          title="Check In"
+          variant="secondary"
+          onPress={onCheckIn}
+          size="large"
+        />
+      </View>
+    )}
+
+    <Spacer size={20} />
+
+    <View style={styles.secondaryActions}>
+      <GymForceButton
+        title="Change Your Gym"
+        onPress={onEditGym}
+        size="small"
+        variant="primary"
+      />
+      <GymForceButton
+        title="Get Directions"
+        variant="tertiary"
+        onPress={onGetDirections}
+        size="small"
+      />
+    </View>
+  </View>
+);
+
+const MembershipOptions: React.FC<{
+  gym: any;
+  membershipStatus: any;
+  onExistingMember: () => void;
+  onMembershipInterest: () => void;
+  onGymContact: () => void;
+  sendingInterest: boolean;
+  claimingMembership: boolean;
+  isLoading: boolean;
+}> = ({
+  gym,
+  membershipStatus,
+  onExistingMember,
+  onMembershipInterest,
+  onGymContact,
+  sendingInterest,
+  claimingMembership,
+  isLoading,
+}) => (
+  <View style={styles.membershipOptions}>
+    <GymForceText style={styles.membershipTitle}>
+      Welcome to {gym?.properties.name}
+    </GymForceText>
+    <GymForceText style={styles.membershipSubtitle}>
+      {membershipStatus?.sent
+        ? "Once you've completed your membership signup with the gym, click below:"
+        : "Are you currently a member of this gym?"}
+    </GymForceText>
+    <View style={styles.buttonContainer}>
+      <GymForceButton
+        title={
+          claimingMembership
+            ? "Verifying..."
+            : membershipStatus?.sent
+            ? "I have become a member"
+            : "I am already a member"
+        }
+        onPress={onExistingMember}
+        variant="primary"
+        fullWidth
+        disabled={claimingMembership}
+      />
+      {!membershipStatus?.sent && (
+        <>
+          <FlexibleSpacer bottom size={12} />
+          <GymForceButton
+            title={sendingInterest ? "Sending..." : "I want to become a member"}
+            onPress={onMembershipInterest}
+            variant="secondary"
+            fullWidth
+            disabled={sendingInterest}
+            loading={sendingInterest}
+          />
+        </>
+      )}
+      {membershipStatus?.sent && (
+        <>
+          <FlexibleSpacer bottom size={12} />
+          <GymForceButton
+            title="Gym hasn't reached out yet?"
+            onPress={onGymContact}
+            variant="tertiary"
+            fullWidth
+          />
+        </>
+      )}
+    </View>
+  </View>
+);
 const GymCard: React.FC<GymCardProps> = ({
   showCheckIn = true,
   requireAttestation = false,
+  gym = null,
 }) => {
   const navigation = useNavigation<GymSelectionNavigationProp>();
-  const { userProfile } = useUserProfileContext();
   const { fetchCheckInHistory } = useCheckInContext();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [showMembershipOptions, setShowMembershipOptions] = useState(false);
-  const [membershipStatus, setMembershipStatus] = useState<{
-    userClaimedMembership: boolean;
-    userClaimedMembershipAt?: Date;
-    sent?: boolean;
-    sentAt?: Date;
-  } | null>(null);
-  const [sendingInterest, setSendingInterest] = useState(false);
-  const gym = userProfile?.gym;
+  const [claimingMembership, setClaimingMembership] = useState(false);
 
-  useEffect(() => {
-    const checkStatus = async () => {
-      if (gym?.id && auth.currentUser && requireAttestation) {
-        try {
-          const status = await checkMembershipInterestStatus(
-            auth.currentUser.uid,
-            gym.id
-          );
-          setMembershipStatus({
-            userClaimedMembership: status?.userClaimedMembership || false,
-            userClaimedMembershipAt: status?.userClaimedMembershipAt,
-            sent: status?.sent || false,
-            sentAt: status?.sentAt,
-          });
-        } catch (error) {
-          console.error("Error checking membership status:", error);
-        }
-      }
-    };
-    checkStatus();
-  }, [gym?.id, requireAttestation]);
+  const {
+    membershipStatus,
+    sendingInterest,
+    handleExistingMember,
+    handleMembershipInterest,
+    handleGymContact,
+    isLoading,
+  } = useMembershipStatus(gym);
+
+  const handleExistingMemberWithLoading = async () => {
+    setClaimingMembership(true);
+    try {
+      await handleExistingMember();
+    } finally {
+      setClaimingMembership(false);
+    }
+  };
 
   const handleEditOrFindGym = () => {
     navigation.navigate("GymSelection", { mode: "edit" });
@@ -99,170 +210,9 @@ const GymCard: React.FC<GymCardProps> = ({
     }
   };
 
-  const handleExistingMember = async () => {
-    if (!gym?.id) return;
-
-    try {
-      await claimMembership(auth.currentUser?.uid || "anonymous", gym.id);
-      setMembershipStatus((prev) => ({
-        ...prev!,
-        userClaimedMembership: true,
-        userClaimedMembershipAt: new Date(),
-      }));
-      setShowMembershipOptions(false);
-      Alert.alert("Welcome!", "You can now start checking in at this gym!");
-    } catch (error) {
-      console.error("Error claiming membership:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem. Please try again or contact support."
-      );
-    }
-  };
-
-  const handleMembershipInterest = async () => {
-    if (!gym?.id) return;
-
-    try {
-      setSendingInterest(true);
-
-      if (auth.currentUser?.email && userProfile?.name) {
-        await sendMembershipInterest({
-          userId: auth.currentUser.uid,
-          userEmail: auth.currentUser.email,
-          userName: userProfile.name,
-          userPhone: userProfile.phone,
-          gymId: gym.id,
-        });
-        setMembershipStatus((prev) => ({
-          ...prev!,
-          sent: true,
-          sentAt: new Date(),
-        }));
-        Alert.alert(
-          "Thank you!",
-          "We've notified the gym of your interest. They will contact you about membership options."
-        );
-      } else {
-        Alert.alert(
-          "Profile Required",
-          "Please complete your profile with email and name to express interest in membership."
-        );
-      }
-    } catch (error) {
-      console.error("Error in membership process:", error);
-      Alert.alert(
-        "Error",
-        "There was a problem sending your membership interest. Please try again or contact support."
-      );
-    } finally {
-      setSendingInterest(false);
-    }
-  };
-
-  const handleGymContact = () => {
-    Alert.alert(
-      "Gym Contact",
-      "If the gym hasn't contacted you yet, feel free to visit during business hours or give them a call!"
-    );
-  };
-
   const closeModal = () => {
     setModalVisible(false);
   };
-
-  const renderMembershipOptions = () => (
-    <View style={styles.membershipOptions}>
-      <GymForceText style={styles.membershipTitle}>
-        Welcome to {gym?.properties.name}
-      </GymForceText>
-      <GymForceText style={styles.membershipSubtitle}>
-        {membershipStatus?.sent
-          ? "Once you've completed your membership signup with the gym, click below:"
-          : "Are you currently a member of this gym?"}
-      </GymForceText>
-      <View style={styles.buttonContainer}>
-        <GymForceButton
-          title={
-            membershipStatus?.sent
-              ? "I have become a member"
-              : "I am already a member"
-          }
-          onPress={handleExistingMember}
-          variant="primary"
-          fullWidth
-        />
-        {!membershipStatus?.sent && (
-          <>
-            <FlexibleSpacer bottom size={12} />
-            <GymForceButton
-              title="I want to become a member"
-              onPress={handleMembershipInterest}
-              variant="secondary"
-              fullWidth
-              disabled={sendingInterest}
-            />
-          </>
-        )}
-        {membershipStatus?.sent && (
-          <>
-            <FlexibleSpacer bottom size={12} />
-            <GymForceButton
-              title="Gym hasn't reached out yet?"
-              onPress={handleGymContact}
-              variant="tertiary"
-              fullWidth
-            />
-          </>
-        )}
-      </View>
-    </View>
-  );
-
-  const renderMemberContent = () => (
-    <View>
-      <NoMarginView>
-        <GymForceText type="Title" color="primary">
-          {gym?.properties.name}
-        </GymForceText>
-        <GymForceText type="Note" color="#666666">
-          {gym?.properties.address}, {gym?.properties.city},{" "}
-          {gym?.properties.state}
-        </GymForceText>
-        <FlexibleSpacer size={8} bottom />
-      </NoMarginView>
-
-      {showCheckIn &&
-        (!requireAttestation || membershipStatus?.userClaimedMembership) && (
-          <View style={styles.mainAction}>
-            <GymForceButton
-              fullWidth={true}
-              title="Check In"
-              variant="secondary"
-              onPress={handleCheckIn}
-              size="large"
-            />
-          </View>
-        )}
-
-      <Spacer size={20} />
-
-      <View style={styles.secondaryActions}>
-        <GymForceButton
-          title="Change Your Gym"
-          onPress={handleEditOrFindGym}
-          size="small"
-          variant="primary"
-        />
-        <GymForceButton
-          title="Get Directions"
-          variant="tertiary"
-          onPress={handleGetDirections}
-          size="small"
-        />
-      </View>
-    </View>
-  );
 
   if (!gym) {
     return (
@@ -282,15 +232,38 @@ const GymCard: React.FC<GymCardProps> = ({
       </CardWithIconBackground>
     );
   }
-
+  const canCheckIn =
+    !gym?.isOnNetwork || membershipStatus?.userClaimedMembership === true;
   return (
     <CardWithIconBackground
       iconLibrary="MaterialCommunityIcons"
       iconName="weight-lifter"
     >
-      {requireAttestation && !membershipStatus?.userClaimedMembership
-        ? renderMembershipOptions()
-        : renderMemberContent()}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <GymForceText>Checking membership status...</GymForceText>
+        </View>
+      ) : gym?.isOnNetwork && !membershipStatus?.userClaimedMembership ? (
+        <MembershipOptions
+          gym={gym}
+          membershipStatus={membershipStatus}
+          onExistingMember={handleExistingMemberWithLoading}
+          onMembershipInterest={handleMembershipInterest}
+          onGymContact={handleGymContact}
+          sendingInterest={sendingInterest}
+          claimingMembership={claimingMembership}
+          isLoading={isLoading}
+        />
+      ) : (
+        <NetworkGymContent
+          gym={gym}
+          onCheckIn={handleCheckIn}
+          onEditGym={handleEditOrFindGym}
+          onGetDirections={handleGetDirections}
+          showCheckIn={showCheckIn}
+          canCheckIn={canCheckIn}
+        />
+      )}
 
       <CheckInConfirmationModal
         isVisible={isModalVisible}
@@ -336,5 +309,11 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 8,
+  },
+  loadingContainer: {
+    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 200,
   },
 });

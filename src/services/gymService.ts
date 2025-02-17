@@ -7,7 +7,13 @@ import {
 import axios from "axios";
 import { auth } from "./firebaseConfig";
 import { Alert, Linking } from "react-native";
-import { GymReview, Gym, GooglePlacesApiResponse } from "../types";
+import {
+  GymReview,
+  Gym,
+  GooglePlacesApiResponse,
+  Company,
+  GroupedCompanies,
+} from "../types";
 import { calculateDistance } from "../utils/calculateDistance";
 import {
   AddressComponent,
@@ -32,7 +38,9 @@ export const fetchGyms = async (lat: number, lng: number, range: number) => {
       `${process.env.FIREBASE_FUNCTION_HOST_URL}/getNearbyFacilitiesSecondGen?lat=${lat}&lng=${lng}&range=${range}`,
       { headers }
     );
-    return response.data.facilities;
+    // Response is already grouped by industry
+    const groupedCompanies = response.data.facilities as GroupedCompanies;
+    return groupedCompanies;
   } catch (error: any) {
     console.error("Error fetching gyms:", error?.response?.data || error);
     throw new Error("Failed to fetch gyms.");
@@ -79,6 +87,8 @@ export const getGymDetails = async (gymId: string) => {
   const combinedData = {
     ...firestoreData,
     ...hubSpotData,
+    // Only mark as network gym if lifecyclestage is 97079970
+    isOnNetwork: hubSpotData?.properties?.lifecyclestage === "97079970",
   };
   return combinedData;
 };
@@ -183,7 +193,7 @@ export const fetchNonNetworkGyms = async (
       averageRating: place.rating || 0,
       reviews: [],
       totalReviews: place.user_ratings_total || 0,
-      isOnNetwork: false,
+      isOnNetwork: false, // Explicitly mark Google Places gyms as non-network
     }));
 
     return gyms;
@@ -195,7 +205,11 @@ export const fetchNonNetworkGyms = async (
 
 // Utility to extract specific address components
 export const getAddressComponent = (
-  components: AddressComponent[],
+  components: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>,
   targetType: PlaceType
 ): string | null => {
   const component = components?.find((c) => c.types.includes(targetType));

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, ActivityIndicator, FlatList } from "react-native";
+import { useRoute, RouteProp } from "@react-navigation/native";
 import GymForceText from "../components/GymForceText";
 import GymHeader from "../components/GymHeader";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
@@ -12,12 +13,16 @@ import FlexibleSpacer from "../components/FlexibleSpacer";
 import Padding from "../components/Padding";
 import GymChatModal from "../components/GymChatModal";
 import GymCard from "../components/GymCard";
+import { AppStackParamList } from "../navigation/AppStackParamList";
+
+type GymScreenRouteProp = RouteProp<AppStackParamList, "GymScreen">;
 
 const GymScreen: React.FC = () => {
+  const route = useRoute<GymScreenRouteProp>();
   const { userProfile } = useUserProfileContext();
   const [isChatVisible, setChatVisible] = React.useState(false);
 
-  const gymId = userProfile?.gym?.id ?? null;
+  const gymId = route.params?.gymId ?? userProfile?.gym?.id ?? null;
   const { gymData, loading, error, fetchGymData } = useGymData(gymId);
 
   useEffect(() => {
@@ -55,7 +60,10 @@ const GymScreen: React.FC = () => {
                 rating={gymData?.averageRating || 0}
                 totalReviews={gymData?.totalReviews || 0}
               >
-                <GymCard requireAttestation={true} />
+                <GymCard
+                  requireAttestation={gymData?.isOnNetwork ?? false}
+                  gym={gymData}
+                />
               </GymHeader>
             ),
           },

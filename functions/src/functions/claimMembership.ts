@@ -1,55 +1,48 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 
 export const claimMembership = onCall(async (request) => {
-  console.log("Starting claimMembership function");
+  const { userId, gymId } = request.data;
+
+  if (!userId || !gymId) {
+    throw new Error("Missing required fields: userId and gymId");
+  }
+
+  // Verify the caller is the same user they're trying to operate on
+  if (request.auth?.uid !== userId) {
+    throw new Error("Unauthorized: You can only claim membership for yourself");
+  }
 
   try {
-    const { userId, gymId } = request.data;
-    console.log("Received claim request:", { userId, gymId });
-
-    if (!userId || !gymId) {
-      console.error("Missing required fields:", {
-        hasUserId: !!userId,
-        hasGymId: !!gymId,
-      });
-      throw new HttpsError("invalid-argument", "Missing required fields");
-    }
-
-    const docPath = `${userId}_${gymId}`;
-    const membershipRef = admin
+    const docRef = admin
       .firestore()
+      .collection("users")
+      .doc(userId)
       .collection("membershipInterest")
-      .doc(docPath);
+      .doc(gymId);
 
-    const doc = await membershipRef.get();
-    if (!doc.exists) {
-      throw new HttpsError("not-found", "No membership interest found");
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      // Create a new membership interest document if it doesn't exist
+      await docRef.set({
+        userId,
+        gymId,
+        userClaimedMembership: true,
+        userClaimedMembershipAt: admin.firestore.Timestamp.now(),
+        sent: false, // No email sent yet
+      });
+    } else {
+      // Update existing document
+      await docRef.update({
+        userClaimedMembership: true,
+        userClaimedMembershipAt: admin.firestore.Timestamp.now(),
+      });
     }
 
-    // Update the membership status
-    await membershipRef.update({
-      userClaimedMembership: true,
-      userClaimedMembershipAt: admin.firestore.Timestamp.now(),
-    });
-
-    console.log("Successfully updated membership claim status");
-    return {
-      success: true,
-      message:
-        "Thank you for confirming your membership! You can now access all GymForce features.",
-    };
+    return { success: true, message: "Membership claimed successfully" };
   } catch (error) {
-    console.error("Error in claimMembership:", error);
-    if (error instanceof Error) {
-      throw new HttpsError(
-        "internal",
-        `Error claiming membership: ${error.message}`
-      );
-    }
-    throw new HttpsError(
-      "internal",
-      "Unknown error occurred while claiming membership"
-    );
+    console.error("Error claiming membership:", error);
+    throw new Error("Failed to claim membership");
   }
 });

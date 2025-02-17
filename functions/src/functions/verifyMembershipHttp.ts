@@ -171,20 +171,16 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
   }
 
   try {
-    const { userId, gymId, token } = request.query;
+    const userId = request.query.userId as string;
+    const gymId = request.query.gymId as string;
+    const token = request.query.token as string;
+
     console.log("Received verification request from query params:", {
       userId,
       gymId,
     });
 
-    if (
-      !userId ||
-      !gymId ||
-      !token ||
-      Array.isArray(userId) ||
-      Array.isArray(gymId) ||
-      Array.isArray(token)
-    ) {
+    if (!userId || !gymId || !token) {
       console.error("Invalid or missing query parameters");
       response
         .status(400)
@@ -198,11 +194,12 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
       return;
     }
 
-    const docPath = `${userId}_${gymId}`;
     const membershipRef = admin
       .firestore()
+      .collection("users")
+      .doc(userId)
       .collection("membershipInterest")
-      .doc(docPath);
+      .doc(gymId);
 
     const doc = await membershipRef.get();
     if (!doc.exists) {

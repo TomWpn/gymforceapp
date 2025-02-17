@@ -7,8 +7,10 @@ import { onGymReviewCreated } from "./functions/onGymReviewCreated";
 import { onGymReviewUpdated } from "./functions/onGymReviewUpdated";
 import { createCompanySecondGen } from "./functions/createCompanySecondGen";
 import { handleMembershipInterest } from "./functions/handleMembershipInterest";
-import { claimMembership } from "./functions/claimMembership";
+import { claimMembershipHttp } from "./functions/claimMembershipHttp";
+import { checkMembershipStatusHttp } from "./functions/checkMembershipStatusHttp";
 import { verifyMembershipHttp } from "./functions/verifyMembershipHttp";
+import { checkMembershipStatus } from "./functions/checkMembershipStatus";
 
 // locate all functions closest to users
 setGlobalOptions({ region: "us-central1" });
@@ -19,5 +21,7 @@ exports.onGymReviewCreated = onGymReviewCreated;
 exports.onGymReviewUpdated = onGymReviewUpdated;
 exports.createCompanySecondGen = createCompanySecondGen;
 exports.handleMembershipInterest = handleMembershipInterest;
-exports.claimMembership = claimMembership;
+exports.claimMembershipHttp = claimMembershipHttp;
+exports.checkMembershipStatusHttp = checkMembershipStatusHttp;
 exports.verifyMembershipHttp = verifyMembershipHttp;
+exports.checkMembershipStatus = checkMembershipStatus;

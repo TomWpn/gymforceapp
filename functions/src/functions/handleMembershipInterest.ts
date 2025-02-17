@@ -163,6 +163,11 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
         userName: request.data.userName,
         userPhone: request.data.userPhone,
         gymId: request.data.gymId,
+        gymName: request.data.gymName,
+        gymAddress: request.data.gymAddress,
+        gymCity: request.data.gymCity,
+        gymState: request.data.gymState,
+        gymDomain: request.data.gymDomain,
       };
       console.log("Received data:", JSON.stringify(data, null, 2));
 
@@ -242,7 +247,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
 
       const emailContent = createEmailContent(
         data,
-        gymData.properties.name || "your gym",
+        data.gymName || "your gym",
         verificationToken
       );
       const emailSubject = `New Membership Interest from ${data.userName}`;
@@ -277,9 +282,9 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
 
         // Gym metadata
         gymId: data.gymId,
-        gymName: gymData.properties.name || "",
-        gymCity: gymData.properties.city,
-        gymState: gymData.properties.state,
+        gymName: data.gymName,
+        gymCity: data.gymCity,
+        gymState: data.gymState,
 
         // Email metadata
         emailSubject,
@@ -292,15 +297,21 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
         verificationTokenUsed: false,
       };
 
-      const docPath = `${data.userId}_${data.gymId}`;
-      console.log("Writing to membershipInterest path:", docPath);
+      console.log(
+        "Writing membership interest for user:",
+        data.userId,
+        "gym:",
+        data.gymId
+      );
 
       // First get references to both documents
       const gymRef = admin.firestore().collection("gyms").doc(data.gymId);
       const membershipRef = admin
         .firestore()
+        .collection("users")
+        .doc(data.userId)
         .collection("membershipInterest")
-        .doc(docPath);
+        .doc(data.gymId);
 
       // Create the documents in a transaction to ensure atomicity
       await admin.firestore().runTransaction(async (transaction) => {

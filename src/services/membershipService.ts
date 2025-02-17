@@ -1,7 +1,6 @@
 import axios from "axios";
-import { auth, firestore } from "./firebaseConfig";
+import { auth } from "./firebaseConfig";
 import { EmailStatus } from "../types";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 const getAuthHeaders = async () => {
   const user = auth.currentUser;
@@ -19,6 +18,11 @@ interface MembershipInterestData {
   userName: string;
   userPhone?: string;
   gymId: string;
+  gymName: string;
+  gymAddress?: string;
+  gymCity?: string;
+  gymState?: string;
+  gymDomain?: string;
 }
 
 export const sendMembershipInterest = async (data: MembershipInterestData) => {
@@ -64,26 +68,31 @@ export const checkMembershipInterestStatus = async (
   userId: string,
   gymId: string
 ) => {
-  console.log("Checking membership interest status:", { userId, gymId });
+  console.log("Starting checkMembershipInterestStatus with:", {
+    userId,
+    gymId,
+  });
+  console.log("Current auth state:", {
+    currentUser: auth.currentUser?.uid,
+    isAuthenticated: !!auth.currentUser,
+  });
 
   try {
-    const docPath = `${userId}_${gymId}`;
-    console.log("Fetching document from path:", docPath);
+    const headers = await getAuthHeaders();
+    console.log("Got auth headers:", headers);
 
-    const docRef = doc(firestore, "membershipInterest", docPath);
-    const docSnap = await getDoc(docRef);
+    const response = await axios({
+      method: "post",
+      url: `${process.env.FIREBASE_FUNCTION_HOST_URL}/checkMembershipStatusHttp`,
+      data: { data: { userId, gymId } },
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
 
-    if (docSnap.exists()) {
-      const data = docSnap.data() as EmailStatus;
-      console.log(
-        "Found membership interest status:",
-        JSON.stringify(data, null, 2)
-      );
-      return data;
-    }
-
-    console.log("No membership interest status found");
-    return null;
+    console.log("Function response:", response.data);
+    return response.data.data as EmailStatus | null;
   } catch (error) {
     console.error("Error checking membership interest status:", error);
     if (error instanceof Error) {
@@ -99,31 +108,27 @@ export const checkMembershipInterestStatus = async (
 
 export const claimMembership = async (userId: string, gymId: string) => {
   console.log("Starting claimMembership with:", { userId, gymId });
+  console.log("Current auth state:", {
+    currentUser: auth.currentUser?.uid,
+    isAuthenticated: !!auth.currentUser,
+  });
 
   try {
-    const docPath = `${userId}_${gymId}`;
-    const docRef = doc(firestore, "membershipInterest", docPath);
-    const docSnap = await getDoc(docRef);
+    const headers = await getAuthHeaders();
+    console.log("Got auth headers:", headers);
 
-    if (!docSnap.exists()) {
-      // Create a new membership interest document if it doesn't exist
-      await setDoc(docRef, {
-        userId,
-        gymId,
-        userClaimedMembership: true,
-        userClaimedMembershipAt: new Date(),
-        sent: false, // No email sent yet
-      });
-    } else {
-      // Update existing document
-      await updateDoc(docRef, {
-        userClaimedMembership: true,
-        userClaimedMembershipAt: new Date(),
-      });
-    }
+    const response = await axios({
+      method: "post",
+      url: `${process.env.FIREBASE_FUNCTION_HOST_URL}/claimMembershipHttp`,
+      data: { data: { userId, gymId } },
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
 
-    console.log("Successfully claimed membership");
-    return { success: true, message: "Membership claimed successfully" };
+    console.log("Function response:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error claiming membership:", error);
     if (error instanceof Error) {

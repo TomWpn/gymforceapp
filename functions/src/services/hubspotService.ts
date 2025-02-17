@@ -3,7 +3,7 @@ import { defineString } from "firebase-functions/params";
 import { GroupedCompanies } from "../types/gymforce";
 import { calculateDistance } from "../utils/calculateDistance";
 import { geocodeAddress } from "./googleService";
-import { Company } from "../types/Hubspot";
+import { Company } from "../types/hubspot";
 
 const HUBSPOT_OAUTH_ACCESS_TOKEN = defineString("HUBSPOT_OAUTH_ACCESS_TOKEN");
 const HUBSPOT_BASE_URL = "https://api.hubapi.com/crm/v3/objects/companies";

@@ -44,4 +44,9 @@ export interface MembershipInterestData {
   userName: string;
   userPhone?: string;
   gymId: string;
+  gymName: string;
+  gymAddress?: string;
+  gymCity?: string;
+  gymState?: string;
+  gymDomain?: string;
 }

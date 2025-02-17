@@ -42,7 +42,7 @@ export const addOrUpdateReviewToFirestore = async ({
   userId: string;
   rating: number;
   comment: string;
-  ownerNote: string;
+  ownerNote?: string;
 }) => {
   const reviewRef = doc(firestore, "gyms", gymId, "reviews", userId); // Use userId as document ID
   const reviewData = {
