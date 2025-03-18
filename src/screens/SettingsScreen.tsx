@@ -1,5 +1,5 @@
-import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { version } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import UserDetailsCard from "../components/UserDetailsCard";
 import EmployerCard from "../components/EmployerCard";
 import GymCard from "../components/GymCard";
@@ -55,6 +55,7 @@ const SettingsScreen: React.FC = () => {
         size="small"
       />
       <DeleteAccountButton />
+      <Text style={styles.version}>version 3.18.25</Text>
     </ScrollView>
   );
 };
@@ -68,5 +69,11 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     marginBottom: 20,
+  },
+  version: {
+    textAlign: "center",
+    color: "#999",
+    fontSize: 12,
+    marginTop: 20,
   },
 });
