@@ -13,7 +13,7 @@ export const onGymReviewUpdated = onDocumentUpdated(
     const previousRating = beforeData.rating;
 
     if (newRating === previousRating) {
-      console.log("No changes to the review rating. Skipping update.");
+      // console.log("No changes to the review rating. Skipping update.");
       return;
     }
 

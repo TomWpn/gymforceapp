@@ -154,7 +154,7 @@ const createTransporter = async () => {
 
 export const handleMembershipInterest = onCall<MembershipInterestData>(
   async (request) => {
-    console.log("Starting handleMembershipInterest function");
+    // console.log("Starting handleMembershipInterest function");
 
     try {
       const data: MembershipInterestData = {
@@ -169,7 +169,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
         gymState: request.data.gymState,
         gymDomain: request.data.gymDomain,
       };
-      console.log("Received data:", JSON.stringify(data, null, 2));
+      // console.log("Received data:", JSON.stringify(data, null, 2));
 
       if (!data.userId || !data.userEmail || !data.userName || !data.gymId) {
         console.error("Missing required fields:", {
@@ -181,14 +181,14 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
         throw new HttpsError("invalid-argument", "Missing required fields");
       }
 
-      console.log("Getting HubSpot headers...");
+      // console.log("Getting HubSpot headers...");
       const headers = await getHubSpotHeaders();
-      console.log("Successfully got HubSpot headers");
+      // console.log("Successfully got HubSpot headers");
 
       // Get gym details from HubSpot
-      console.log("Fetching gym details from HubSpot:", data.gymId);
+      // console.log("Fetching gym details from HubSpot:", data.gymId);
       const gymData = await getCompanyById(data.gymId);
-      console.log("Gym data from HubSpot:", JSON.stringify(gymData, null, 2));
+      // console.log("Gym data from HubSpot:", JSON.stringify(gymData, null, 2));
 
       if (!gymData) {
         console.error("Gym not found in HubSpot:", data.gymId);
@@ -199,7 +199,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
       }
 
       // Get associated contacts for the gym
-      console.log("Fetching associated contacts for gym");
+      // console.log("Fetching associated contacts for gym");
       const associationsResponse = await axios.get(
         `${HUBSPOT_COMPANIES_URL}/${data.gymId}/associations/contacts`,
         { headers }
@@ -219,7 +219,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
 
       // Get the first contact's details
       const firstContactId = associationsResponse.data.results[0].id;
-      console.log("Getting first contact details:", firstContactId);
+      // console.log("Getting first contact details:", firstContactId);
 
       const contactResponse = await axios.get(
         `${HUBSPOT_CONTACTS_URL}/${firstContactId}?properties=email`,
@@ -240,10 +240,10 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
       }
       // Generate a secure verification token
       const verificationToken = crypto.randomBytes(32).toString("hex");
-      console.log("Generated verification token");
+      // console.log("Generated verification token");
 
       // Send email using nodemailer
-      console.log("Preparing to send email");
+      // console.log("Preparing to send email");
 
       const emailContent = createEmailContent(
         data,
@@ -254,7 +254,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
 
       const transporter = await createTransporter();
 
-      console.log("Sending email");
+      // console.log("Sending email");
       const info = await transporter.sendMail({
         from: `Gym Force® <${EMAIL_USER.value()}>`,
         to: contactEmail,
@@ -263,10 +263,10 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
         replyTo: data.userEmail, // Allow gym to reply directly to the prospect
       });
 
-      console.log("Email sent successfully:", info.messageId);
+      // console.log("Email sent successfully:", info.messageId);
 
       // Store email status in Firestore
-      console.log("Storing email status in Firestore");
+      // console.log("Storing email status in Firestore");
 
       // Create the membershipInterest document
       const emailStatus: EmailStatus = {
@@ -316,18 +316,18 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
       // Create the documents in a transaction to ensure atomicity
       await admin.firestore().runTransaction(async (transaction) => {
         // First, do all reads
-        console.log("Reading documents in transaction");
+        // console.log("Reading documents in transaction");
         const gymDoc = await transaction.get(gymRef);
 
         // Then, do all writes
-        console.log("Performing writes in transaction");
+        // console.log("Performing writes in transaction");
 
         // Always write the membership interest status
         transaction.set(membershipRef, emailStatus);
 
         // Create gym document if it doesn't exist
         if (!gymDoc.exists) {
-          console.log("Creating gym document in Firestore");
+          // console.log("Creating gym document in Firestore");
           transaction.set(gymRef, {
             id: data.gymId,
             createdAt: admin.firestore.Timestamp.now(),
@@ -340,7 +340,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
       console.log(
         "Successfully stored email status and ensured gym document exists"
       );
-      console.log("Function completed successfully");
+      // console.log("Function completed successfully");
       return { data: { success: true, emailStatus } };
     } catch (error) {
       console.error("Error in handleMembershipInterest:", error);

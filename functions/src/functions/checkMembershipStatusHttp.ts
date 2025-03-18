@@ -20,7 +20,7 @@ export const checkMembershipStatusHttp = onRequest((req, res) => {
       console.log(`Authenticated user ID: ${decodedToken.uid}`);
 
       const { userId, gymId } = req.body.data;
-      console.log("Request data:", { userId, gymId });
+      // console.log("Request data:", { userId, gymId });
 
       if (!userId || !gymId) {
         console.error("Missing required fields:", { userId, gymId });
@@ -40,7 +40,7 @@ export const checkMembershipStatusHttp = onRequest((req, res) => {
         return;
       }
 
-      console.log("Auth check passed, proceeding with database query");
+      // console.log("Auth check passed, proceeding with database query");
 
       const docRef = admin
         .firestore()
@@ -49,17 +49,17 @@ export const checkMembershipStatusHttp = onRequest((req, res) => {
         .collection("membershipInterest")
         .doc(gymId);
 
-      console.log("Attempting to fetch document at path:", docRef.path);
+      // console.log("Attempting to fetch document at path:", docRef.path);
 
       const docSnap = await docRef.get();
-      console.log("Document exists:", docSnap.exists);
+      // console.log("Document exists:", docSnap.exists);
 
       if (docSnap.exists) {
         const data = docSnap.data() as EmailStatus;
-        console.log("Found membership data:", data);
+        // console.log("Found membership data:", data);
         res.json({ data });
       } else {
-        console.log("No membership data found");
+        // console.log("No membership data found");
         res.json({ data: null });
       }
     } catch (error) {

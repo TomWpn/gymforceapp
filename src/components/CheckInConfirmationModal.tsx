@@ -25,10 +25,10 @@ const CheckInConfirmationModal: React.FC<CheckInConfirmationModalProps> = ({
         if (result.activityType) {
           console.log(`Shared with activity type: ${result.activityType}`);
         } else {
-          console.log("Content shared successfully!");
+          // console.log("Content shared successfully!");
         }
       } else if (result.action === Share.dismissedAction) {
-        console.log("Sharing dismissed");
+        // console.log("Sharing dismissed");
       }
     } catch (error) {
       console.error("Error sharing:", error);

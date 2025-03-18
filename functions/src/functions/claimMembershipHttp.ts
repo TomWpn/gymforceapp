@@ -19,7 +19,7 @@ export const claimMembershipHttp = onRequest((req, res) => {
       console.log(`Authenticated user ID: ${decodedToken.uid}`);
 
       const { userId, gymId } = req.body.data;
-      console.log("Request data:", { userId, gymId });
+      // console.log("Request data:", { userId, gymId });
 
       if (!userId || !gymId) {
         console.error("Missing required fields:", { userId, gymId });
@@ -37,7 +37,7 @@ export const claimMembershipHttp = onRequest((req, res) => {
         return;
       }
 
-      console.log("Auth check passed, proceeding with database operation");
+      // console.log("Auth check passed, proceeding with database operation");
 
       const docRef = admin
         .firestore()
@@ -46,14 +46,14 @@ export const claimMembershipHttp = onRequest((req, res) => {
         .collection("membershipInterest")
         .doc(gymId);
 
-      console.log("Attempting to access document at path:", docRef.path);
+      // console.log("Attempting to access document at path:", docRef.path);
 
       const docSnap = await docRef.get();
-      console.log("Document exists:", docSnap.exists);
+      // console.log("Document exists:", docSnap.exists);
 
       if (!docSnap.exists) {
         // Create a new membership interest document if it doesn't exist
-        console.log("Creating new membership interest document");
+        // console.log("Creating new membership interest document");
         await docRef.set({
           userId,
           gymId,
@@ -63,14 +63,14 @@ export const claimMembershipHttp = onRequest((req, res) => {
         });
       } else {
         // Update existing document
-        console.log("Updating existing membership interest document");
+        // console.log("Updating existing membership interest document");
         await docRef.update({
           userClaimedMembership: true,
           userClaimedMembershipAt: admin.firestore.Timestamp.now(),
         });
       }
 
-      console.log("Successfully processed membership claim");
+      // console.log("Successfully processed membership claim");
       res.json({ success: true, message: "Membership claimed successfully" });
     } catch (error) {
       console.error("Error in claimMembershipHttp:", error);

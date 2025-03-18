@@ -155,7 +155,7 @@ const renderPage = (title: string, message: string, isError = false) => `
 `;
 
 export const verifyMembershipHttp = onRequest(async (request, response) => {
-  console.log("Starting verifyMembershipHttp function");
+  // console.log("Starting verifyMembershipHttp function");
 
   if (request.method !== "GET") {
     response
@@ -175,10 +175,10 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
     const gymId = request.query.gymId as string;
     const token = request.query.token as string;
 
-    console.log("Received verification request from query params:", {
-      userId,
-      gymId,
-    });
+    // console.log("Received verification request from query params:", {
+    //   userId,
+    //   gymId,
+    // });
 
     if (!userId || !gymId || !token) {
       console.error("Invalid or missing query parameters");
@@ -217,7 +217,7 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
 
     const membershipData = doc.data() as EmailStatus;
 
-    console.log("Checking verification token status");
+    // console.log("Checking verification token status");
 
     // Verify the token
     if (membershipData.verificationToken !== token) {
@@ -235,7 +235,7 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
     }
 
     if (membershipData.verificationTokenUsed) {
-      console.log("Token has already been used");
+      // console.log("Token has already been used");
       response
         .status(400)
         .send(
@@ -250,7 +250,7 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
       return;
     }
 
-    console.log("Token validation successful, proceeding with verification");
+    // console.log("Token validation successful, proceeding with verification");
 
     // Update the membership status and mark token as used
     await membershipRef.update({
@@ -259,7 +259,7 @@ export const verifyMembershipHttp = onRequest(async (request, response) => {
       verificationTokenUsed: true,
     });
 
-    console.log("Successfully verified membership");
+    // console.log("Successfully verified membership");
 
     response
       .status(200)

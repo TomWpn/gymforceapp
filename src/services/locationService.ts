@@ -84,6 +84,6 @@ export const stopWatchingLocation = (
 ): void => {
   if (locationSubscription) {
     locationSubscription.remove();
-    console.log("Location watching stopped");
+    // console.log("Location watching stopped");
   }
 };

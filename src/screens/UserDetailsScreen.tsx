@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   TextInput,
   StyleSheet,
@@ -12,7 +12,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import {
+  GooglePlacesAutocomplete,
+  GooglePlacesAutocompleteRef,
+} from "react-native-google-places-autocomplete";
 import { updateUserProfileField } from "../services/userProfileService";
 import { auth } from "../services/firebaseConfig";
 import { AppStackParamList } from "../navigation/AppStackParamList";
@@ -22,6 +25,7 @@ import GymForceText from "../components/GymForceText";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useUserProfileContext } from "../context/UserProfileContext";
 import FlexibleSpacer from "../components/FlexibleSpacer";
+import { GOOGLE_MAPS_API_KEY } from "@env";
 
 type UserDetailsScreenNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -44,7 +48,31 @@ const UserDetailsScreen = () => {
   const [addressDetails, setAddressDetails] = useState(
     userProfile?.address || null
   );
+
+  // Debug log for initial addressDetails
+  useEffect(() => {
+    // console.log("Initial addressDetails:", addressDetails);
+  }, []);
   const [isEditingAddress, setIsEditingAddress] = useState(mode === "signup");
+  const googlePlacesRef = useRef<GooglePlacesAutocompleteRef | null>(null);
+
+  // Set the initial address text only once when the component mounts
+  useEffect(() => {
+    if (googlePlacesRef.current && initialAddress && isEditingAddress) {
+      googlePlacesRef.current.setAddressText(initialAddress);
+    }
+  }, [initialAddress, isEditingAddress]);
+
+  // Ensure addressDetails is set if user has an address in their profile
+  useEffect(() => {
+    if (!addressDetails && userProfile?.address) {
+      console.log(
+        "Setting addressDetails from userProfile:",
+        userProfile.address
+      );
+      setAddressDetails(userProfile.address);
+    }
+  }, [addressDetails, userProfile]);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,16 +81,52 @@ const UserDetailsScreen = () => {
   }, [navigation, mode]);
 
   const handleSaveDetails = async () => {
-    if (!name || !phone || !addressDetails) {
-      // Alert.alert("Error", "Please fill in all fields.");
+    // console.log("handleSaveDetails called");
+    // console.log("name:", name);
+    // console.log("phone:", phone);
+    // console.log("addressDetails:", addressDetails);
+    // console.log("isEditingAddress:", isEditingAddress);
+    console.log(
+      "googlePlacesRef text:",
+      googlePlacesRef.current?.getAddressText()
+    );
+
+    // If we're not editing the address and addressDetails is null but there's text in the input,
+    // try to create addressDetails from the text
+    if (!addressDetails && !isEditingAddress && initialAddress) {
+      console.log(
+        "Creating fallback addressDetails from initialAddress:",
+        initialAddress
+      );
+      setAddressDetails({
+        formatted_address: initialAddress,
+        coordinates: userProfile?.address?.coordinates || { lat: 0, lng: 0 },
+      });
+
+      // Show alert but don't return, let it proceed with the fallback address
+      Alert.alert(
+        "Warning",
+        "Using existing address as fallback. Please verify it's correct."
+      );
+    } else if (!name || !phone || !addressDetails) {
+      Alert.alert("Error", "Please fill in all fields.");
       return;
     }
 
     try {
       const uid = auth.currentUser?.uid;
+      // console.log("Current user UID:", uid);
+
       if (!uid) throw new Error("User not authenticated");
 
       const currentDate = new Date().toISOString();
+
+      // console.log("Updating user profile with:", {
+      //   name,
+      //   phone,
+      //   address: addressDetails,
+      //   email: auth.currentUser?.email,
+      // });
 
       await updateUserProfileField(uid, {
         name,
@@ -82,14 +146,35 @@ const UserDetailsScreen = () => {
       await refreshUserProfile();
 
       // Alert.alert("Success", "Your details have been saved.");
+
+      // console.log("Navigation mode:", mode);
+      // console.log("User has employer:", !!userProfile?.employer);
+      // console.log("User has gym:", !!userProfile?.gym);
+
       if (mode === "signup") {
-        navigation.navigate("EmployerSelection", { mode: "signup" });
+        // If user already has both employer and gym, go directly to Home
+        if (userProfile?.employer && userProfile?.gym) {
+          console.log(
+            "User already has employer and gym, going to Home screen"
+          );
+          navigation.navigate("Home", { screen: "Dashboard" });
+        }
+        // If user has employer but no gym, go to GymSelection
+        else if (userProfile?.employer) {
+          // console.log("User already has employer, skipping to GymSelection");
+          navigation.navigate("GymSelection", { mode: "signup" });
+        }
+        // If user has neither employer nor gym, go to EmployerSelection
+        else {
+          // console.log("User needs to select an employer");
+          navigation.navigate("EmployerSelection", { mode: "signup" });
+        }
       } else {
         navigation.goBack();
       }
     } catch (error) {
       console.error("Error saving user details:", error);
-      // Alert.alert("Error", "Could not save user details.");
+      Alert.alert("Error", "Could not save user details.");
     }
   };
 
@@ -119,25 +204,80 @@ const UserDetailsScreen = () => {
       case "address":
         return isEditingAddress || mode === "signup" ? (
           <GooglePlacesAutocomplete
+            ref={(instance) => {
+              // Store the ref for later use in useEffect
+              if (instance) {
+                googlePlacesRef.current = instance;
+              }
+            }}
             placeholder="Search for your address"
             fetchDetails={true}
             onPress={(data, details = null) => {
-              setAddressDetails({
-                formatted_address: details?.formatted_address!,
-                coordinates: details?.geometry.location!,
-              });
-              setIsEditingAddress(false);
+              // console.log("Google Places onPress - data:", data);
+              // console.log("Google Places onPress - details:", details);
+
+              // Always log the current text in the input
+              const currentText = googlePlacesRef.current?.getAddressText();
+              // console.log("Current address text:", currentText);
+
+              if (
+                details &&
+                details.formatted_address &&
+                details.geometry &&
+                details.geometry.location
+              ) {
+                const newAddressDetails = {
+                  formatted_address: details.formatted_address,
+                  coordinates: details.geometry.location,
+                };
+
+                setAddressDetails(newAddressDetails);
+                // console.log("Address details set:", newAddressDetails);
+
+                // Double-check that addressDetails was set correctly
+                setTimeout(() => {
+                  console.log(
+                    "Verifying addressDetails was set:",
+                    addressDetails
+                  );
+                }, 100);
+
+                setIsEditingAddress(false);
+              } else if (currentText) {
+                // Fallback: If we have text but no details, create a basic address object
+                console.log(
+                  "Using fallback address from text input:",
+                  currentText
+                );
+                const fallbackAddress = {
+                  formatted_address: currentText,
+                  coordinates: { lat: 0, lng: 0 },
+                };
+                setAddressDetails(fallbackAddress);
+                // console.log("Fallback address details set:", fallbackAddress);
+                setIsEditingAddress(false);
+              } else {
+                console.error("Missing required address details:", details);
+                Alert.alert(
+                  "Error",
+                  "Could not get complete address details. Please try again."
+                );
+              }
             }}
             query={{
-              key: process.env.GOOGLE_MAPS_API_KEY,
+              key: GOOGLE_MAPS_API_KEY,
               language: "en",
               components: "country:us",
             }}
             textInputProps={{
-              defaultValue: initialAddress,
               onChangeText: (text) => {
-                if (!text) setAddressDetails(null);
+                // console.log("Google Places text input changed:", text);
+                if (!text) {
+                  // console.log("Clearing address details");
+                  setAddressDetails(null);
+                }
               },
+              placeholderTextColor: "#888",
             }}
             styles={{
               container: styles.autocompleteContainer,
@@ -146,13 +286,37 @@ const UserDetailsScreen = () => {
               row: styles.autocompleteRow,
               description: styles.autocompleteDescription,
             }}
+            enablePoweredByContainer={false}
           />
         ) : (
           <View style={styles.addressContainer}>
             <GymForceText type="Subtitle" style={styles.addressText}>
-              {addressDetails?.formatted_address || "Address not set"}
+              {addressDetails?.formatted_address ||
+                initialAddress ||
+                "Address not set"}
             </GymForceText>
-            <TouchableOpacity onPress={() => setIsEditingAddress(true)}>
+            <TouchableOpacity
+              onPress={() => {
+                // console.log("Edit address button pressed");
+                // console.log("Current addressDetails:", addressDetails);
+
+                // If addressDetails is null but we have initialAddress, set it
+                if (!addressDetails && initialAddress) {
+                  console.log(
+                    "Setting addressDetails from initialAddress before editing"
+                  );
+                  setAddressDetails({
+                    formatted_address: initialAddress,
+                    coordinates: userProfile?.address?.coordinates || {
+                      lat: 0,
+                      lng: 0,
+                    },
+                  });
+                }
+
+                setIsEditingAddress(true);
+              }}
+            >
               <Icon name="edit" size={20} color="#888" />
             </TouchableOpacity>
           </View>

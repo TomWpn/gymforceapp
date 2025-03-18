@@ -5,7 +5,6 @@ import {
   StyleSheet,
   View,
   ImageBackground,
-  Image,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { AppStackParamList } from "../navigation/AppStackParamList";
@@ -16,16 +15,15 @@ import {
   getUserProfile,
   updateUserProfileWithCompany,
 } from "../services/userProfileService";
-import { checkMembershipInterestStatus } from "../services/membershipService";
 import { auth } from "../services/firebaseConfig";
 import { Address, GroupedCompanies, Company, Gym } from "../types";
-import GymForceButton from "../components/GymForceButton";
 import GymForceText from "../components/GymForceText";
 import FlexibleSpacer from "../components/FlexibleSpacer";
 import { useUserProfileContext } from "../context/UserProfileContext";
 import NoMarginView from "../components/NoMarginView";
 import Padding from "../components/Padding";
 import { createCompanyInHubSpot } from "../services/hubspotHelper";
+import { useProfileCompletionCheck } from "../hooks/useProfileCompletionCheck";
 
 type GymSelectionRouteProp = RouteProp<AppStackParamList, "GymSelection">;
 type GymSelectionNavigationProp = StackNavigationProp<
@@ -147,6 +145,8 @@ const GymSelectionScreen = () => {
     setNonNetworkGyms([]);
   };
 
+  const checkProfileAndNavigate = useProfileCompletionCheck(mode);
+
   const handleSelectGym = async (gym: Gym) => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
@@ -159,11 +159,18 @@ const GymSelectionScreen = () => {
       await updateUserProfileWithCompany(uid, updatedGym, "gym");
       await refreshUserProfile();
 
-      // Skip attestation for non-network gyms
+      // For non-network gyms, we still need to verify profile completion
       if (!gym.isOnNetwork) {
-        mode === "signup"
-          ? navigation.navigate("Home", { screen: "Gyms" })
-          : navigation.goBack();
+        if (mode === "signup") {
+          // Check if profile is complete and navigate accordingly
+          const isComplete = await checkProfileAndNavigate();
+          if (isComplete) {
+            // All fields are complete, navigate to Home
+            navigation.navigate("Home", { screen: "Gyms" });
+          }
+        } else {
+          navigation.goBack();
+        }
         return;
       }
 

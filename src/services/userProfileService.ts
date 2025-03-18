@@ -28,7 +28,7 @@ export const getUserProfile = async (
     if (userDoc.exists()) {
       return userDoc.data() as UserProfile;
     } else {
-      console.log("No user profile found.");
+      // console.log("No user profile found.");
       return null;
     }
   } catch (error) {

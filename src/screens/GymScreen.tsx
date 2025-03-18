@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ActivityIndicator, FlatList } from "react-native";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import GymForceText from "../components/GymForceText";
 import GymHeader from "../components/GymHeader";
 import CheckInHistoryCard from "../components/CheckInHistoryCard";
@@ -14,25 +15,50 @@ import Padding from "../components/Padding";
 import GymChatModal from "../components/GymChatModal";
 import GymCard from "../components/GymCard";
 import { AppStackParamList } from "../navigation/AppStackParamList";
+import { useProfileCompletionCheck } from "../hooks/useProfileCompletionCheck";
 
 type GymScreenRouteProp = RouteProp<AppStackParamList, "GymScreen">;
+type GymScreenNavigationProp = StackNavigationProp<
+  AppStackParamList,
+  "GymScreen"
+>;
 
 const GymScreen: React.FC = () => {
   const route = useRoute<GymScreenRouteProp>();
-  const { userProfile } = useUserProfileContext();
+  const navigation = useNavigation<GymScreenNavigationProp>();
+  const { userProfile, refreshUserProfile } = useUserProfileContext();
   const [isChatVisible, setChatVisible] = React.useState(false);
 
   const gymId = route.params?.gymId ?? userProfile?.gym?.id ?? null;
+  const showMembershipInterest = route.params?.showMembershipInterest ?? false;
   const { gymData, loading, error, fetchGymData } = useGymData(gymId);
+
+  // Get the profile completion check hook
+  const checkProfileAndNavigate = useProfileCompletionCheck("signup");
 
   useEffect(() => {
     fetchGymData();
   }, [userProfile?.gym?.id]);
 
+  // Handle attestation completion
+  const handleAttestationComplete = async () => {
+    await refreshUserProfile();
+
+    // Check if profile is complete and navigate accordingly
+    const isComplete = await checkProfileAndNavigate();
+    if (isComplete) {
+      // All fields are complete, navigate to Home
+      navigation.navigate("Home", { screen: "Dashboard" });
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#f1600d" />
+        <GymForceText style={styles.loadingText}>
+          Loading gym information...
+        </GymForceText>
       </View>
     );
   }
@@ -63,6 +89,7 @@ const GymScreen: React.FC = () => {
                 <GymCard
                   requireAttestation={gymData?.isOnNetwork ?? false}
                   gym={gymData}
+                  onAttestationComplete={handleAttestationComplete}
                 />
               </GymHeader>
             ),
@@ -124,6 +151,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#1a265a",
+    fontWeight: "500",
   },
   section: {
     marginHorizontal: 20,

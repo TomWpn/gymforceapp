@@ -38,13 +38,14 @@ type EmployerSelectionScreenRouteProp = RouteProp<
 const EmployerSelectionScreen = () => {
   const navigation = useNavigation<EmployerSelectionScreenNavigationProp>();
   const route = useRoute<EmployerSelectionScreenRouteProp>();
-  const { refreshUserProfile } = useUserProfileContext();
+  const { userProfile, refreshUserProfile } = useUserProfileContext();
   const { mode } = route.params || {}; // mode can be "signup" or "edit"
 
   const [query, setQuery] = useState("");
   const [employers, setEmployers] = useState<Company[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  // No longer need showSearchForm state since we always show the search form
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -78,8 +79,19 @@ const EmployerSelectionScreen = () => {
       await refreshUserProfile(); // Function to refresh user profile data
       // Alert.alert("Success", `Selected employer: ${employer.properties.name}`);
 
+      // Check if user already has a gym
+      // console.log("User has gym:", !!userProfile?.gym);
+
       if (mode === "signup") {
-        navigation.navigate("GymSelection", { mode: "signup" });
+        if (userProfile?.gym) {
+          // If user already has a gym, skip to Home screen
+          // console.log("User already has a gym, skipping to Home screen");
+          navigation.navigate("Home", { screen: "Dashboard" });
+        } else {
+          // Otherwise, proceed to gym selection
+          // console.log("User needs to select a gym");
+          navigation.navigate("GymSelection", { mode: "signup" });
+        }
       } else {
         navigation.goBack();
       }
@@ -217,6 +229,20 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: "#ddd",
+  },
+  currentEmployerCard: {
+    padding: 20,
+    marginVertical: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    alignItems: "center",
   },
   employerName: {
     fontSize: 18,

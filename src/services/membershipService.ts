@@ -68,18 +68,18 @@ export const checkMembershipInterestStatus = async (
   userId: string,
   gymId: string
 ) => {
-  console.log("Starting checkMembershipInterestStatus with:", {
-    userId,
-    gymId,
-  });
-  console.log("Current auth state:", {
-    currentUser: auth.currentUser?.uid,
-    isAuthenticated: !!auth.currentUser,
-  });
+  // console.log("Starting checkMembershipInterestStatus with:", {
+  //   userId,
+  //   gymId,
+  // });
+  // console.log("Current auth state:", {
+  //   currentUser: auth.currentUser?.uid,
+  //   isAuthenticated: !!auth.currentUser,
+  // });
 
   try {
     const headers = await getAuthHeaders();
-    console.log("Got auth headers:", headers);
+    // console.log("Got auth headers:", headers);
 
     const response = await axios({
       method: "post",
@@ -91,7 +91,7 @@ export const checkMembershipInterestStatus = async (
       },
     });
 
-    console.log("Function response:", response.data);
+    // console.log("Function response:", response.data);
     return response.data.data as EmailStatus | null;
   } catch (error) {
     console.error("Error checking membership interest status:", error);
@@ -107,15 +107,15 @@ export const checkMembershipInterestStatus = async (
 };
 
 export const claimMembership = async (userId: string, gymId: string) => {
-  console.log("Starting claimMembership with:", { userId, gymId });
-  console.log("Current auth state:", {
-    currentUser: auth.currentUser?.uid,
-    isAuthenticated: !!auth.currentUser,
-  });
+  // console.log("Starting claimMembership with:", { userId, gymId });
+  // console.log("Current auth state:", {
+  //   currentUser: auth.currentUser?.uid,
+  //   isAuthenticated: !!auth.currentUser,
+  // });
 
   try {
     const headers = await getAuthHeaders();
-    console.log("Got auth headers:", headers);
+    // console.log("Got auth headers:", headers);
 
     const response = await axios({
       method: "post",
@@ -127,7 +127,7 @@ export const claimMembership = async (userId: string, gymId: string) => {
       },
     });
 
-    console.log("Function response:", response.data);
+    // console.log("Function response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error claiming membership:", error);
