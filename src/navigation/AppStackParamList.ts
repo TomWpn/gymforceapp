@@ -21,6 +21,7 @@ export type AppStackParamList = {
   GymScreen: {
     gymId: string;
     showMembershipInterest?: boolean;
+    returnToGymTab?: boolean;
   };
 };
 

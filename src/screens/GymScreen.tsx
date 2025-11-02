@@ -31,6 +31,7 @@ const GymScreen: React.FC = () => {
 
   const gymId = route.params?.gymId ?? userProfile?.gym?.id ?? null;
   const showMembershipInterest = route.params?.showMembershipInterest ?? false;
+  const returnToGymTab = route.params?.returnToGymTab ?? false;
   const { gymData, loading, error, fetchGymData } = useGymData(gymId);
 
   // Get the profile completion check hook
@@ -47,8 +48,9 @@ const GymScreen: React.FC = () => {
     // Check if profile is complete and navigate accordingly
     const isComplete = await checkProfileAndNavigate();
     if (isComplete) {
-      // All fields are complete, navigate to Home
-      navigation.navigate("Home", { screen: "Dashboard" });
+      // All fields are complete, navigate to appropriate screen
+      const targetScreen = returnToGymTab ? "Gyms" : "Dashboard";
+      navigation.navigate("Home", { screen: targetScreen });
     }
   };
 

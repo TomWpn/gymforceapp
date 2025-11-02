@@ -1,6 +1,7 @@
 // App.tsx
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "./src/context/AuthContext";
 import AppContent from "./src/navigation/AppContent";
 import "react-native-get-random-values";
@@ -12,6 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => (
   <SafeAreaProvider>
+    <StatusBar style="dark" backgroundColor="#ffffff" />
     <AuthProvider>
       <UserProfileProvider>
         <CheckInProvider>

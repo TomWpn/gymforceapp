@@ -9,6 +9,7 @@ import {
   Platform,
   ImageBackground,
   Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
@@ -55,89 +56,97 @@ const LoginScreen = () => {
       style={styles.keyboardAvoidingContainer}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ImageBackground
-        source={{ uri: "https://gymforce.app/assets/images/kettlebell.jpeg" }}
-        style={styles.background}
-      >
-        <View style={styles.overlay} />
-        <View style={styles.contentContainer}>
-          <GymForceText type="Title" style={styles.title}>
-            Welcome Back!
-          </GymForceText>
-          <GymForceText type="Subtitle" style={styles.subtitle}>
-            Log in to continue
-          </GymForceText>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <ImageBackground
+          source={{ uri: "https://gymforce.app/assets/images/kettlebell.jpeg" }}
+          style={styles.background}
+        >
+          <View style={styles.overlay} />
+          <View style={styles.contentContainer}>
+            <GymForceText type="Title" style={styles.title}>
+              Welcome Back!
+            </GymForceText>
+            <GymForceText type="Subtitle" style={styles.subtitle}>
+              Log in to continue
+            </GymForceText>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            textContentType="none" // Explicitly disable autofill for this field
-            autoCorrect={false}
-            autoComplete="off"
-          />
-
-          <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.passwordInput}
-              placeholder="Password"
+              style={styles.input}
+              placeholder="Email"
               placeholderTextColor="#888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!passwordVisible}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
               autoCapitalize="none"
-              textContentType="none" // Explicitly disable suggestions/autofill
+              textContentType="none" // Explicitly disable autofill for this field
+              autoCorrect={false}
+              autoComplete="off"
             />
-            <TouchableOpacity
-              onPress={() => setPasswordVisible(!passwordVisible)}
-              style={styles.eyeIcon}
-            >
-              <Icon
-                name={passwordVisible ? "visibility" : "visibility-off"}
-                size={20}
-                color="#888"
+
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor="#888"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!passwordVisible}
+                autoCapitalize="none"
+                textContentType="none" // Explicitly disable suggestions/autofill
               />
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+                style={styles.eyeIcon}
+              >
+                <Icon
+                  name={passwordVisible ? "visibility" : "visibility-off"}
+                  size={20}
+                  color="#888"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <GymForceButton
+              title={loading ? "Logging in..." : "Login"}
+              onPress={handleLogin}
+              disabled={loading}
+              fullWidth
+              variant="primary"
+              size="large"
+            />
+
+            {/* Forgot Password Link */}
+            <FlexibleSpacer top size={16} />
+            <TouchableOpacity
+              onPress={() => {
+                Keyboard.dismiss();
+                // Small delay to ensure keyboard dismissal completes before navigation
+                setTimeout(() => {
+                  navigation.navigate("ForgotPassword");
+                }, 100);
+              }}
+            >
+              <GymForceText color="#ff7f50">Forgot Password?</GymForceText>
+            </TouchableOpacity>
+
+            {/* Sign Up Link */}
+            <FlexibleSpacer top size={16} />
+            <TouchableOpacity
+              onPress={() => {
+                Keyboard.dismiss();
+                // Small delay to ensure keyboard dismissal completes before navigation
+                setTimeout(() => {
+                  navigation.navigate("SignUp");
+                }, 100);
+              }}
+            >
+              <GymForceText color="#ff7f50">
+                Don't have an account? Sign Up
+              </GymForceText>
             </TouchableOpacity>
           </View>
-
-          <GymForceButton
-            title={loading ? "Logging in..." : "Login"}
-            onPress={handleLogin}
-            disabled={loading}
-            fullWidth
-            variant="primary"
-            size="large"
-          />
-
-          {/* Forgot Password Link */}
-          <FlexibleSpacer top size={16} />
-          <TouchableOpacity
-            onPress={() => {
-              Keyboard.dismiss();
-              navigation.navigate("ForgotPassword");
-            }}
-          >
-            <GymForceText color="#ff7f50">Forgot Password?</GymForceText>
-          </TouchableOpacity>
-
-          {/* Sign Up Link */}
-          <FlexibleSpacer top size={16} />
-          <TouchableOpacity
-            onPress={() => {
-              Keyboard.dismiss();
-              navigation.navigate("SignUp");
-            }}
-          >
-            <GymForceText color="#ff7f50">
-              Don't have an account? Sign Up
-            </GymForceText>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+        </ImageBackground>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };

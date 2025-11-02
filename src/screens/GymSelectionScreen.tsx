@@ -169,7 +169,8 @@ const GymSelectionScreen = () => {
             navigation.navigate("Home", { screen: "Gyms" });
           }
         } else {
-          navigation.goBack();
+          // Navigate to Gyms tab and refresh the page
+          navigation.navigate("Home", { screen: "Gyms" });
         }
         return;
       }
@@ -178,6 +179,7 @@ const GymSelectionScreen = () => {
       navigation.navigate("GymScreen", {
         gymId: gym.id,
         showMembershipInterest: true,
+        returnToGymTab: mode === "edit",
       });
     } catch (error) {
       console.error("Error saving selected gym:", error);

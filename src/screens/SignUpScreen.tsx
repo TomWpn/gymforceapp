@@ -128,7 +128,10 @@ const SignUpScreen = () => {
             <TouchableOpacity
               onPress={() => {
                 Keyboard.dismiss();
-                navigation.navigate("Login");
+                // Small delay to ensure keyboard dismissal completes before navigation
+                setTimeout(() => {
+                  navigation.navigate("Login");
+                }, 100);
               }}
             >
               <GymForceText color="#ff7f50">
