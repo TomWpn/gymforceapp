@@ -11,6 +11,8 @@ import { claimMembershipHttp } from "./functions/claimMembershipHttp";
 import { checkMembershipStatusHttp } from "./functions/checkMembershipStatusHttp";
 import { verifyMembershipHttp } from "./functions/verifyMembershipHttp";
 import { checkMembershipStatus } from "./functions/checkMembershipStatus";
+import { handleContestCheckIn } from "./functions/handleContestCheckIn";
+import { checkUserCheckInEligibility } from "./functions/checkUserCheckInEligibility";
 
 // locate all functions closest to users
 setGlobalOptions({ region: "us-central1" });
@@ -25,3 +27,5 @@ exports.claimMembershipHttp = claimMembershipHttp;
 exports.checkMembershipStatusHttp = checkMembershipStatusHttp;
 exports.verifyMembershipHttp = verifyMembershipHttp;
 exports.checkMembershipStatus = checkMembershipStatus;
+exports.handleContestCheckIn = handleContestCheckIn;
+exports.checkUserCheckInEligibility = checkUserCheckInEligibility;

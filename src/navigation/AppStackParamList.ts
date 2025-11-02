@@ -8,6 +8,7 @@ export type AppStackParamList = {
   Welcome: undefined;
   SignUp: { mode?: "signup" | "edit" } | undefined;
   Login: undefined;
+  ForgotPassword: undefined;
   EmployerSelection: { mode?: "signup" | "edit" } | undefined;
   GymSelection: { mode?: "signup" | "edit" } | undefined;
   UserDetails: { mode?: "signup" | "edit" } | undefined;

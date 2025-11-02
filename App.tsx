@@ -7,6 +7,7 @@ import "react-native-get-random-values";
 import "react-native-gesture-handler";
 import { UserProfileProvider } from "./src/context/UserProfileContext";
 import { CheckInProvider } from "./src/context/CheckInContext";
+import { ContestProvider } from "./src/context/ContestContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => (
@@ -14,9 +15,11 @@ const App = () => (
     <AuthProvider>
       <UserProfileProvider>
         <CheckInProvider>
-          <NavigationContainer>
-            <AppContent />
-          </NavigationContainer>
+          <ContestProvider>
+            <NavigationContainer>
+              <AppContent />
+            </NavigationContainer>
+          </ContestProvider>
         </CheckInProvider>
       </UserProfileProvider>
     </AuthProvider>

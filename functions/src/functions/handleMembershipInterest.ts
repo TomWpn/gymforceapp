@@ -255,7 +255,7 @@ export const handleMembershipInterest = onCall<MembershipInterestData>(
       const transporter = await createTransporter();
 
       // console.log("Sending email");
-      const info = await transporter.sendMail({
+      await transporter.sendMail({
         from: `Gym Force® <${EMAIL_USER.value()}>`,
         to: contactEmail,
         subject: emailSubject,

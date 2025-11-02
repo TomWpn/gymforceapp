@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Alert, Image, Animated, Easing } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Alert,
+  Image,
+  Animated,
+  Easing,
+  TouchableOpacity,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { logCheckIn } from "../services/checkInService";
 import { StackNavigationProp } from "@react-navigation/stack";
 import GymForceButton from "./GymForceButton";
 import Spacer from "./Spacer";
@@ -17,6 +24,10 @@ import NoMarginView from "./NoMarginView";
 import FlexibleSpacer from "./FlexibleSpacer";
 import { useMembershipStatus } from "../hooks/useMembershipStatus";
 import SkeletonLoader from "./SkeletonLoader";
+import { useContestContext } from "../context/ContestContext";
+import { CheckInContestModal } from "./CheckInContest";
+import { useCheckInEligibility } from "../hooks/useCheckInEligibility";
+import { formatContestDuration } from "../utils/contestUtils";
 
 type GymSelectionNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -30,6 +41,48 @@ interface GymCardProps {
   onAttestationComplete?: () => void;
 }
 
+const ContestBanner: React.FC<{
+  gym: any;
+  onPress: () => void;
+}> = ({ gym, onPress }) => {
+  const { isContestEnabled, activeContest, getUserRank } = useContestContext();
+
+  if (!isContestEnabled || !activeContest) return null;
+
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.contestBanner}>
+      <View style={styles.contestBannerContent}>
+        <View style={styles.contestHeader}>
+          <GymForceText
+            type="Title"
+            color="#FFD700"
+            style={styles.contestTitle}
+          >
+            🏆 Check-In Contest
+          </GymForceText>
+          <GymForceText
+            type="Note"
+            color="#FFFFFF"
+            style={styles.contestPeriod}
+          >
+            {formatContestDuration(activeContest.endDate, true)}
+          </GymForceText>
+        </View>
+        {getUserRank() > 0 && (
+          <View style={styles.userRankBadge}>
+            <GymForceText type="Note" color="#FFFFFF" style={styles.rankText}>
+              Your Rank: #{getUserRank()}
+            </GymForceText>
+          </View>
+        )}
+      </View>
+      <GymForceText type="Note" color="#CCCCCC" style={styles.tapToView}>
+        Tap to view leaderboard →
+      </GymForceText>
+    </TouchableOpacity>
+  );
+};
+
 const NetworkGymContent: React.FC<{
   gym: any;
   onCheckIn: () => void;
@@ -37,6 +90,7 @@ const NetworkGymContent: React.FC<{
   onGetDirections: () => void;
   showCheckIn: boolean;
   canCheckIn: boolean;
+  onContestPress: () => void;
 }> = ({
   gym,
   onCheckIn,
@@ -44,6 +98,7 @@ const NetworkGymContent: React.FC<{
   onGetDirections,
   showCheckIn,
   canCheckIn,
+  onContestPress,
 }) => (
   <View>
     <NoMarginView>
@@ -55,6 +110,8 @@ const NetworkGymContent: React.FC<{
       </GymForceText>
       <FlexibleSpacer size={8} bottom />
     </NoMarginView>
+
+    <ContestBanner gym={gym} onPress={onContestPress} />
 
     {showCheckIn && canCheckIn && (
       <View style={styles.mainAction}>
@@ -163,9 +220,10 @@ const GymCard: React.FC<GymCardProps> = ({
   onAttestationComplete,
 }) => {
   const navigation = useNavigation<GymSelectionNavigationProp>();
-  const { fetchCheckInHistory } = useCheckInContext();
+  const { fetchCheckInHistory, logUserCheckIn } = useCheckInContext();
   const [isModalVisible, setModalVisible] = useState(false);
   const [claimingMembership, setClaimingMembership] = useState(false);
+  const [isContestModalVisible, setContestModalVisible] = useState(false);
 
   // Create animated values for fade-in effect
   const loadingOpacity = useRef(new Animated.Value(1)).current;
@@ -179,6 +237,12 @@ const GymCard: React.FC<GymCardProps> = ({
     handleGymContact,
     isLoading,
   } = useMembershipStatus(gym);
+
+  const {
+    eligibility,
+    loading: eligibilityLoading,
+    refetchEligibility,
+  } = useCheckInEligibility();
 
   // Animate opacity when loading state changes
   useEffect(() => {
@@ -230,20 +294,51 @@ const GymCard: React.FC<GymCardProps> = ({
 
   const handleCheckIn = async () => {
     try {
-      const uid = auth.currentUser?.uid;
-      const gymId = gym?.id;
-
-      if (!uid || !gymId) {
-        console.error("Check-in failed: Missing user or gym information.");
+      // First check if user is eligible to check in
+      if (!eligibility?.canCheckIn) {
+        Alert.alert(
+          "Cannot Check In",
+          eligibility?.reason ||
+            "You are not eligible to check in at this time."
+        );
         return;
       }
 
-      await logCheckIn(uid, gymId, gym.properties.name!);
-      await fetchCheckInHistory();
+      const gymId = gym?.id;
+
+      if (!gymId) {
+        console.error("Check-in failed: Missing gym information.");
+        return;
+      }
+
+      console.log("🏋️ Starting check-in process for gym:", gym.properties.name);
+      await logUserCheckIn(gymId, gym.properties.name!);
+      console.log("✅ Check-in completed successfully");
+
+      // Refresh eligibility after successful check-in
+      await refetchEligibility();
+
       setModalVisible(true);
     } catch (error) {
-      console.error("Error checking in:", error);
+      console.error("❌ Error checking in:", error);
+
+      // Check if it's a validation error from Firebase Function
+      if (
+        error instanceof Error &&
+        error.message.includes("already checked in")
+      ) {
+        Alert.alert(
+          "Already Checked In",
+          "You can only check in once per day. You've already checked in today!"
+        );
+        // Refresh eligibility to update UI state
+        await refetchEligibility();
+      }
     }
+  };
+
+  const handleContestPress = () => {
+    setContestModalVisible(true);
   };
 
   const closeModal = () => {
@@ -329,6 +424,7 @@ const GymCard: React.FC<GymCardProps> = ({
             onGetDirections={handleGetDirections}
             showCheckIn={showCheckIn}
             canCheckIn={canCheckIn}
+            onContestPress={handleContestPress}
           />
         )}
       </Animated.View>
@@ -337,6 +433,11 @@ const GymCard: React.FC<GymCardProps> = ({
         isVisible={isModalVisible}
         onClose={closeModal}
         gymName={gym?.properties.name!}
+      />
+
+      <CheckInContestModal
+        isVisible={isContestModalVisible}
+        onClose={() => setContestModalVisible(false)}
       />
     </CardWithIconBackground>
   );
@@ -407,5 +508,47 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#1a265a",
     fontSize: 14,
+  },
+  // Contest banner styles
+  contestBanner: {
+    backgroundColor: "#2B2D42", // More neutral navy background
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 12,
+  },
+  contestBannerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  contestHeader: {
+    flex: 1,
+  },
+  contestTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  contestPeriod: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    opacity: 0.9,
+  },
+  userRankBadge: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  rankText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  tapToView: {
+    textAlign: "center",
+    fontSize: 12,
+    marginTop: 8,
   },
 });
