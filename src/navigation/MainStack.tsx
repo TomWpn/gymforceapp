@@ -8,6 +8,7 @@ import BottomTabs from "../components/BottomTabs";
 import WelcomeScreen from "../screens/WelcomeScreen";
 import SignUpScreen from "../screens/SignUpScreen";
 import LoginScreen from "../screens/LoginScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
 const Stack = createStackNavigator<AppStackParamList>();
 
@@ -32,6 +33,11 @@ const MainStack = ({
     <Stack.Screen
       name="Login"
       component={LoginScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="ForgotPassword"
+      component={ForgotPasswordScreen}
       options={{ headerShown: false }}
     />
     <Stack.Screen

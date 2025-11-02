@@ -5,6 +5,8 @@ import {
   logCheckIn,
 } from "../services/checkInService";
 import { auth } from "../services/firebaseConfig";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../services/firebaseConfig";
 import { format } from "date-fns";
 
 interface GroupedCheckIn {
@@ -77,10 +79,63 @@ export const CheckInProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!uid) return;
 
     try {
+      // Log the check-in first
       await logCheckIn(uid, gymId, gymName);
+
+      // Handle contest logic via Firebase Function
+      try {
+        console.log("🎯 Attempting to call handleContestCheckIn function...");
+        console.log("Function parameters:", { userId: uid, gymId, gymName });
+
+        const handleContestCheckIn = httpsCallable(
+          functions,
+          "handleContestCheckIn"
+        );
+
+        console.log("🔄 Calling Firebase Function...");
+        const result = await handleContestCheckIn({
+          userId: uid,
+          gymId,
+          gymName,
+        });
+
+        console.log("✅ Function call completed. Raw result:", result);
+
+        const contestResult = result.data as {
+          success: boolean;
+          contestEnrolled: boolean;
+          contestId?: string;
+          pointsEarned?: number;
+          newTotalPoints?: number;
+          currentRank?: number;
+          message: string;
+        };
+
+        console.log("📊 Contest check-in result:", contestResult);
+
+        if (contestResult.contestEnrolled) {
+          console.log(
+            `🏆 Contest processing successful: +${contestResult.pointsEarned} points, total: ${contestResult.newTotalPoints}, rank: ${contestResult.currentRank}`
+          );
+        } else {
+          console.log("ℹ️ Contest not enrolled:", contestResult.message);
+        }
+      } catch (contestError) {
+        console.error("❌ Contest processing failed:", contestError);
+        if (contestError instanceof Error) {
+          console.error("Error details:", {
+            name: contestError.name,
+            message: contestError.message,
+            stack: contestError.stack,
+          });
+        }
+        // Don't throw here as the check-in itself was successful
+      }
+
       await fetchCheckInHistory(); // Refresh check-in history after logging a new check-in
     } catch (error) {
       console.error("Error logging check-in:", error);
+      throw error;
     }
   };
 

@@ -112,8 +112,20 @@ const LoginScreen = () => {
             variant="primary"
             size="large"
           />
-          {/* Log In Link */}
-          <FlexibleSpacer top size={32} />
+
+          {/* Forgot Password Link */}
+          <FlexibleSpacer top size={16} />
+          <TouchableOpacity
+            onPress={() => {
+              Keyboard.dismiss();
+              navigation.navigate("ForgotPassword");
+            }}
+          >
+            <GymForceText color="#ff7f50">Forgot Password?</GymForceText>
+          </TouchableOpacity>
+
+          {/* Sign Up Link */}
+          <FlexibleSpacer top size={16} />
           <TouchableOpacity
             onPress={() => {
               Keyboard.dismiss();
