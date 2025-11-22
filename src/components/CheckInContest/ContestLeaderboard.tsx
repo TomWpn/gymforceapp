@@ -340,17 +340,6 @@ const ContestLeaderboard: React.FC<ContestLeaderboardProps> = ({
                 </Text>
               </View>
             </View>
-
-            {/* Check In Button */}
-            <TouchableOpacity
-              style={contestStyles.primaryButton}
-              onPress={handleCheckIn}
-              disabled={isLoading}
-            >
-              <Text style={contestStyles.primaryButtonText}>
-                {isLoading ? "Checking In..." : "Check In Now"}
-              </Text>
-            </TouchableOpacity>
           </View>
         )}
 

@@ -10,6 +10,8 @@ export interface ContestUser {
   isCurrentUser?: boolean;
   gymId?: string;
   userId: string;
+  gymName?: string;
+  gymLogo?: string;
 }
 
 export interface ContestPeriod {

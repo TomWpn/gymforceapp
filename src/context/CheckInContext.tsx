@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {
-  CheckInRecord,
-  getCheckInHistory,
-  logCheckIn,
-} from "../services/checkInService";
+import { CheckInRecord, getCheckInHistory } from "../services/checkInService";
 import { auth } from "../services/firebaseConfig";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../services/firebaseConfig";
@@ -79,8 +75,23 @@ export const CheckInProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!uid) return;
 
     try {
-      // Log the check-in first
-      await logCheckIn(uid, gymId, gymName);
+      // Use secure server-side check-in function
+      console.log("🔒 Calling secure check-in function...");
+      const logSecureCheckIn = httpsCallable(functions, "logSecureCheckIn");
+
+      const result = await logSecureCheckIn({
+        userId: uid,
+        gymId,
+        gymName,
+      });
+
+      const checkInResult = result.data as {
+        success: boolean;
+        message: string;
+        checkInId?: string;
+      };
+
+      console.log("✅ Secure check-in result:", checkInResult);
 
       // Handle contest logic via Firebase Function
       try {
@@ -93,15 +104,15 @@ export const CheckInProvider: React.FC<{ children: React.ReactNode }> = ({
         );
 
         console.log("🔄 Calling Firebase Function...");
-        const result = await handleContestCheckIn({
+        const contestResult = await handleContestCheckIn({
           userId: uid,
           gymId,
           gymName,
         });
 
-        console.log("✅ Function call completed. Raw result:", result);
+        console.log("✅ Function call completed. Raw result:", contestResult);
 
-        const contestResult = result.data as {
+        const contestData = contestResult.data as {
           success: boolean;
           contestEnrolled: boolean;
           contestId?: string;
@@ -111,14 +122,14 @@ export const CheckInProvider: React.FC<{ children: React.ReactNode }> = ({
           message: string;
         };
 
-        console.log("📊 Contest check-in result:", contestResult);
+        console.log("📊 Contest check-in result:", contestData);
 
-        if (contestResult.contestEnrolled) {
+        if (contestData.contestEnrolled) {
           console.log(
-            `🏆 Contest processing successful: +${contestResult.pointsEarned} points, total: ${contestResult.newTotalPoints}, rank: ${contestResult.currentRank}`
+            `🏆 Contest processing successful: +${contestData.pointsEarned} points, total: ${contestData.newTotalPoints}, rank: ${contestData.currentRank}`
           );
         } else {
-          console.log("ℹ️ Contest not enrolled:", contestResult.message);
+          console.log("ℹ️ Contest not enrolled:", contestData.message);
         }
       } catch (contestError) {
         console.error("❌ Contest processing failed:", contestError);

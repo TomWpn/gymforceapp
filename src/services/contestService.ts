@@ -14,6 +14,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { firestore, auth } from "./firebaseConfig";
+import { sanitizeEmail } from "../utils/privacyUtils";
 import {
   ContestData,
   ContestUser,
@@ -199,7 +200,7 @@ export class ContestService {
   // Leaderboard
   static async getContestLeaderboard(
     contestId: string,
-    limitCount: number = 50
+    limitCount: number = 1000
   ): Promise<ContestUser[]> {
     try {
       const leaderboardQuery = query(
@@ -211,25 +212,31 @@ export class ContestService {
       );
 
       const snapshot = await getDocs(leaderboardQuery);
-      const users: ContestUser[] = [];
-      const currentUserId = auth.currentUser?.uid;
+      const currentUserId = auth.currentUser?.uid || null;
 
+      const users: ContestUser[] = [];
       for (let i = 0; i < snapshot.docs.length; i++) {
         const docSnapshot = snapshot.docs[i];
         const data = docSnapshot.data();
 
-        // Fetch user profile for display name
+        // Fetch user profile for display name and gym
         const userProfileDoc = await getDoc(
           doc(firestore, "users", data.userId)
         );
         const userProfile = userProfileDoc.data() as any;
 
+        // Extract first name from full name (split by space)
+        const firstName =
+          userProfile?.name?.split(" ")[0] || userProfile?.firstName;
+
         users.push({
           id: docSnapshot.id,
           userId: data.userId,
           displayName:
-            userProfile?.firstName || userProfile?.email || "Anonymous",
+            firstName || sanitizeEmail(userProfile?.email) || "Anonymous",
           avatar: userProfile?.avatar,
+          gymName: userProfile?.gym?.properties?.name,
+          gymLogo: userProfile?.gym?.properties?.app_background_image_url,
           points: data.points,
           checkIns: data.checkIns,
           lastCheckIn: data.lastCheckInAt?.toDate
@@ -395,8 +402,7 @@ export class ContestService {
       collection(firestore, "contestParticipants"),
       where("contestId", "==", contestId),
       orderBy("points", "desc"),
-      orderBy("checkIns", "desc"),
-      limit(50)
+      orderBy("checkIns", "desc")
     );
 
     return onSnapshot(leaderboardQuery, async (snapshot) => {
@@ -407,18 +413,24 @@ export class ContestService {
         const docSnapshot = snapshot.docs[i];
         const data = docSnapshot.data();
 
-        // Fetch user profile for display name
+        // Fetch user profile for display name and gym
         const userProfileDoc = await getDoc(
           doc(firestore, "users", data.userId)
         );
         const userProfile = userProfileDoc.data() as any;
 
+        // Extract first name from full name (split by space)
+        const firstName =
+          userProfile?.name?.split(" ")[0] || userProfile?.firstName;
+
         users.push({
           id: docSnapshot.id,
           userId: data.userId,
           displayName:
-            userProfile?.firstName || userProfile?.email || "Anonymous",
+            firstName || sanitizeEmail(userProfile?.email) || "Anonymous",
           avatar: userProfile?.avatar,
+          gymName: userProfile?.gym?.properties?.name,
+          gymLogo: userProfile?.gym?.properties?.app_background_image_url,
           points: data.points,
           checkIns: data.checkIns,
           lastCheckIn: data.lastCheckInAt?.toDate

@@ -91,6 +91,7 @@ const NetworkGymContent: React.FC<{
   showCheckIn: boolean;
   canCheckIn: boolean;
   onContestPress: () => void;
+  isCheckingIn: boolean;
 }> = ({
   gym,
   onCheckIn,
@@ -99,6 +100,7 @@ const NetworkGymContent: React.FC<{
   showCheckIn,
   canCheckIn,
   onContestPress,
+  isCheckingIn,
 }) => (
   <View>
     <NoMarginView>
@@ -121,6 +123,8 @@ const NetworkGymContent: React.FC<{
           variant="secondary"
           onPress={onCheckIn}
           size="large"
+          loading={isCheckingIn}
+          disabled={isCheckingIn}
         />
       </View>
     )}
@@ -224,6 +228,7 @@ const GymCard: React.FC<GymCardProps> = ({
   const [isModalVisible, setModalVisible] = useState(false);
   const [claimingMembership, setClaimingMembership] = useState(false);
   const [isContestModalVisible, setContestModalVisible] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   // Create animated values for fade-in effect
   const loadingOpacity = useRef(new Animated.Value(1)).current;
@@ -293,7 +298,17 @@ const GymCard: React.FC<GymCardProps> = ({
   };
 
   const handleCheckIn = async () => {
+    // Prevent duplicate submissions
+    if (isCheckingIn) {
+      console.log(
+        "⏳ Check-in already in progress, ignoring duplicate request"
+      );
+      return;
+    }
+
     try {
+      setIsCheckingIn(true);
+
       // First check if user is eligible to check in
       if (!eligibility?.canCheckIn) {
         Alert.alert(
@@ -334,6 +349,8 @@ const GymCard: React.FC<GymCardProps> = ({
         // Refresh eligibility to update UI state
         await refetchEligibility();
       }
+    } finally {
+      setIsCheckingIn(false);
     }
   };
 
@@ -425,6 +442,7 @@ const GymCard: React.FC<GymCardProps> = ({
             showCheckIn={showCheckIn}
             canCheckIn={canCheckIn}
             onContestPress={handleContestPress}
+            isCheckingIn={isCheckingIn}
           />
         )}
       </Animated.View>

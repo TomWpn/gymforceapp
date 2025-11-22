@@ -73,38 +73,8 @@ export const handleContestCheckIn = onCall(
     const db = admin.firestore();
 
     try {
-      // Step 0: Validate check-in eligibility (once per day rule)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Start of today
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
-
-      console.log("🕐 Checking daily check-in eligibility for user:", userId);
-      console.log("Date range check:", {
-        today: today.toISOString(),
-        tomorrow: tomorrow.toISOString(),
-      });
-
-      const todayCheckInsQuery = await db
-        .collection("users")
-        .doc(userId)
-        .collection("checkIns")
-        .where("timestamp", ">=", admin.firestore.Timestamp.fromDate(today))
-        .where("timestamp", "<", admin.firestore.Timestamp.fromDate(tomorrow))
-        .get();
-
-      if (!todayCheckInsQuery.empty) {
-        console.log(
-          "❌ User already checked in today. Check-ins found:",
-          todayCheckInsQuery.docs.length
-        );
-        throw new HttpsError(
-          "failed-precondition",
-          "You can only check in once per day. You've already checked in today!"
-        );
-      }
-
-      console.log("✅ User eligible for check-in today");
+      // Note: Check-in validation is now handled by logSecureCheckIn function
+      // This function only handles contest-specific logic
 
       // Step 1: Check if contests are enabled
       const featureFlagsDoc = await db
@@ -228,13 +198,27 @@ export const handleContestCheckIn = onCall(
         ? (currentParticipantData.streak || 0) + 1
         : 1;
 
-      // Update participant data
-      await participantRef.update({
-        points: newPoints,
-        checkIns: newCheckIns,
-        lastCheckInAt: admin.firestore.Timestamp.now(),
-        streak: newStreak,
+      console.log(`📊 Updating participant ${participantId}:`, {
+        oldPoints: currentParticipantData.points || 0,
+        newPoints,
+        oldCheckIns: currentParticipantData.checkIns || 0,
+        newCheckIns,
+        oldStreak: currentParticipantData.streak || 0,
+        newStreak,
       });
+
+      // Update participant data - use set with merge to handle race conditions
+      await participantRef.set(
+        {
+          points: newPoints,
+          checkIns: newCheckIns,
+          lastCheckInAt: admin.firestore.Timestamp.now(),
+          streak: newStreak,
+        },
+        { merge: true }
+      );
+
+      console.log(`✅ Successfully updated participant ${participantId}`);
 
       // Step 5: Update ranks for all participants (run in background)
       updateContestRanks(activeContestId).catch((error) => {
@@ -277,6 +261,8 @@ async function updateContestRanks(contestId: string): Promise<void> {
   const db = admin.firestore();
 
   try {
+    console.log(`🏆 Starting rank update for contest ${contestId}...`);
+
     const participantsSnapshot = await db
       .collection("contestParticipants")
       .where("contestId", "==", contestId)
@@ -284,18 +270,35 @@ async function updateContestRanks(contestId: string): Promise<void> {
       .orderBy("checkIns", "desc")
       .get();
 
+    console.log(
+      `📊 Found ${participantsSnapshot.docs.length} participants to rank`
+    );
+
     const batch = db.batch();
 
     participantsSnapshot.docs.forEach((doc, index) => {
+      const participantData = doc.data();
+      console.log(
+        `  Ranking #${index + 1}: ${participantData.displayName} (${
+          participantData.points
+        } points, ${participantData.checkIns} check-ins)`
+      );
       batch.update(doc.ref, { rank: index + 1 });
     });
 
     await batch.commit();
     console.log(
-      `Updated ranks for ${participantsSnapshot.docs.length} participants in contest ${contestId}`
+      `✅ Successfully updated ranks for ${participantsSnapshot.docs.length} participants in contest ${contestId}`
     );
   } catch (error) {
-    console.error("Error updating contest ranks:", error);
+    console.error(`❌ Error updating contest ranks for ${contestId}:`, error);
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+    }
     throw error;
   }
 }

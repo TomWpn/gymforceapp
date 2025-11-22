@@ -9,6 +9,7 @@ import { useUserProfileContext } from "../context/UserProfileContext";
 import FlexibleSpacer from "./FlexibleSpacer";
 import GymForceText from "./GymForceText";
 import { MaterialIcons, Feather, FontAwesome5 } from "@expo/vector-icons";
+import { sanitizeEmail } from "../utils/privacyUtils";
 
 type UserDetailsNavigationProp = StackNavigationProp<
   AppStackParamList,
@@ -60,7 +61,9 @@ const UserDetailsCard: React.FC = () => {
         {userProfile?.email && (
           <View style={styles.detailRow}>
             <Feather name="mail" size={20} color="#1a265a" />
-            <GymForceText style={styles.info}>{userProfile.email}</GymForceText>
+            <GymForceText style={styles.info}>
+              {sanitizeEmail(userProfile.email)}
+            </GymForceText>
           </View>
         )}
       </View>

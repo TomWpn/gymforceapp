@@ -13,6 +13,7 @@ import {
   contestColors,
   contestSizes,
 } from "./styles/contestStyles";
+import { sanitizeDisplayName, getInitials } from "../../utils/privacyUtils";
 
 interface ContestUserCardProps {
   user: ContestUser;
@@ -118,13 +119,15 @@ const ContestUserCard: React.FC<ContestUserCardProps> = ({
           </Text>
         </View>
 
-        {/* User Avatar */}
-        {user.avatar ? (
+        {/* Gym Logo or User Avatar */}
+        {user.gymLogo ? (
+          <Image source={{ uri: user.gymLogo }} style={contestStyles.avatar} />
+        ) : user.avatar ? (
           <Image source={{ uri: user.avatar }} style={contestStyles.avatar} />
         ) : (
           <View style={contestStyles.avatarPlaceholder}>
             <Text style={contestStyles.rankTextDefault}>
-              {user.displayName.charAt(0).toUpperCase()}
+              {getInitials(user.displayName, undefined)}
             </Text>
           </View>
         )}
@@ -143,7 +146,7 @@ const ContestUserCard: React.FC<ContestUserCardProps> = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {user.displayName}
+              {sanitizeDisplayName(user.displayName, undefined)}
             </Text>
             {user.isCurrentUser && (
               <View
@@ -157,6 +160,19 @@ const ContestUserCard: React.FC<ContestUserCardProps> = ({
               </View>
             )}
           </View>
+
+          {/* Gym name */}
+          {user.gymName && (
+            <Text
+              style={[
+                contestStyles.userStats,
+                { marginTop: 1, fontSize: 11, color: "#666" },
+              ]}
+              numberOfLines={1}
+            >
+              {user.gymName}
+            </Text>
+          )}
 
           {/* Compact stats layout */}
           <Text

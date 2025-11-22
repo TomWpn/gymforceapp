@@ -133,13 +133,14 @@ const UserDetailsScreen = () => {
         phone,
         address: addressDetails,
         email: auth.currentUser?.email!,
-        ...(mode === "signup" || (userProfile && !userProfile.createdAt)
+        ...(mode === "signup" || !userProfile?.createdAt
           ? {
               createdAt: new Date(
                 auth.currentUser?.metadata.creationTime!
               ).toISOString(),
             }
-          : { updatedAt: currentDate }),
+          : {}),
+        updatedAt: currentDate,
       });
 
       // Refresh user profile in the context

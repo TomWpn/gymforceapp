@@ -13,6 +13,9 @@ import { verifyMembershipHttp } from "./functions/verifyMembershipHttp";
 import { checkMembershipStatus } from "./functions/checkMembershipStatus";
 import { handleContestCheckIn } from "./functions/handleContestCheckIn";
 import { checkUserCheckInEligibility } from "./functions/checkUserCheckInEligibility";
+import { migrateContestCheckIns } from "./functions/migrateContestCheckIns";
+import { logSecureCheckIn } from "./functions/logSecureCheckIn";
+import { removeDuplicateCheckIns } from "./functions/removeDuplicateCheckIns";
 
 // locate all functions closest to users
 setGlobalOptions({ region: "us-central1" });
@@ -29,3 +32,6 @@ exports.verifyMembershipHttp = verifyMembershipHttp;
 exports.checkMembershipStatus = checkMembershipStatus;
 exports.handleContestCheckIn = handleContestCheckIn;
 exports.checkUserCheckInEligibility = checkUserCheckInEligibility;
+exports.migrateContestCheckIns = migrateContestCheckIns;
+exports.logSecureCheckIn = logSecureCheckIn;
+exports.removeDuplicateCheckIns = removeDuplicateCheckIns;
