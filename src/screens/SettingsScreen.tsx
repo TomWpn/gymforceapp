@@ -55,7 +55,7 @@ const SettingsScreen: React.FC = () => {
         size="small"
       />
       <DeleteAccountButton />
-      <Text style={styles.version}>version 11.22.25.1</Text>
+      <Text style={styles.version}>version 11.22.25.2</Text>
     </ScrollView>
   );
 };

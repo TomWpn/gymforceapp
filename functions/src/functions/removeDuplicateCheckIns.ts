@@ -45,6 +45,14 @@ export const removeDuplicateCheckIns = onRequest(
 
     console.log("✅ Authentication successful, proceeding with migration...");
 
+    // Check if this is a dry run
+    const dryRun = req.body?.dryRun === true;
+    if (dryRun) {
+      console.log("🔍 DRY RUN MODE - No changes will be made to the database");
+    } else {
+      console.log("⚠️  LIVE MODE - Changes will be written to the database");
+    }
+
     const db = admin.firestore();
 
     try {
@@ -92,10 +100,10 @@ export const removeDuplicateCheckIns = onRequest(
           const timestamp = data.timestamp as admin.firestore.Timestamp;
           const date = timestamp.toDate();
 
-          // Create day key (YYYY-MM-DD)
-          const dayKey = `${date.getFullYear()}-${String(
-            date.getMonth() + 1
-          ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+          // Create day key using UTC (YYYY-MM-DD) to match server-side validation
+          const dayKey = `${date.getUTCFullYear()}-${String(
+            date.getUTCMonth() + 1
+          ).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 
           const checkIn: CheckInDoc = {
             id: doc.id,
@@ -143,36 +151,42 @@ export const removeDuplicateCheckIns = onRequest(
 
         // Remove duplicates in batches
         if (duplicatesToRemove.length > 0) {
-          console.log(
-            `  🗑️  Removing ${duplicatesToRemove.length} duplicate check-ins...`
-          );
-
-          const batch = db.batch();
-          let batchCount = 0;
-
-          for (const docId of duplicatesToRemove) {
-            const docRef = db
-              .collection("users")
-              .doc(userId)
-              .collection("checkIns")
-              .doc(docId);
-            batch.delete(docRef);
-            batchCount++;
-
-            // Firestore batch limit is 500 operations
-            if (batchCount === 500) {
-              await batch.commit();
-              console.log(`    ✅ Committed batch of ${batchCount} deletions`);
-              batchCount = 0;
-            }
-          }
-
-          // Commit remaining deletions
-          if (batchCount > 0) {
-            await batch.commit();
+          if (dryRun) {
             console.log(
-              `    ✅ Committed final batch of ${batchCount} deletions`
+              `  🔍 DRY RUN: Would remove ${duplicatesToRemove.length} duplicate check-ins`
             );
+          } else {
+            console.log(
+              `  🗑️  Removing ${duplicatesToRemove.length} duplicate check-ins...`
+            );
+
+            const batch = db.batch();
+            let batchCount = 0;
+
+            for (const docId of duplicatesToRemove) {
+              const docRef = db
+                .collection("users")
+                .doc(userId)
+                .collection("checkIns")
+                .doc(docId);
+              batch.delete(docRef);
+              batchCount++;
+
+              // Firestore batch limit is 500 operations
+              if (batchCount === 500) {
+                await batch.commit();
+                console.log(`    ✅ Committed batch of ${batchCount} deletions`);
+                batchCount = 0;
+              }
+            }
+
+            // Commit remaining deletions
+            if (batchCount > 0) {
+              await batch.commit();
+              console.log(
+                `    ✅ Committed final batch of ${batchCount} deletions`
+              );
+            }
           }
 
           totalDuplicatesRemoved += duplicatesToRemove.length;
@@ -196,13 +210,16 @@ export const removeDuplicateCheckIns = onRequest(
 
       const summary = {
         success: true,
+        dryRun,
         stats: {
           totalUsersProcessed,
           totalUsersWithDuplicates,
           totalDuplicatesRemoved,
         },
         usersWithDuplicates: userResults,
-        message: "Duplicate check-ins removal completed successfully",
+        message: dryRun
+          ? "Dry run completed - no changes were made"
+          : "Duplicate check-ins removal completed successfully",
       };
 
       console.log("\n📊 Migration Summary:");

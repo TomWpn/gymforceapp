@@ -6,6 +6,7 @@ import {
   query,
   getDocs,
   Timestamp,
+  orderBy,
 } from "firebase/firestore";
 
 export type CheckInRecord = {
@@ -43,7 +44,9 @@ export const getCheckInHistory = async (
   const checkInRef = collection(firestore, `users/${uid}/checkIns`);
 
   try {
-    const snapshot = await getDocs(query(checkInRef));
+    const snapshot = await getDocs(
+      query(checkInRef, orderBy("timestamp", "desc"))
+    );
     const checkIns = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),

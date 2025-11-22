@@ -49,13 +49,14 @@ export const CheckInProvider: React.FC<{ children: React.ReactNode }> = ({
           );
 
           if (!acc[gymId]) {
+            // First time seeing this gym - this is the most recent check-in
             acc[gymId] = {
               gymName,
               lastCheckInDate: checkInDate,
               checkInCount: 1,
             };
           } else {
-            acc[gymId].lastCheckInDate = checkInDate;
+            // Already have this gym - just increment count, keep the first (most recent) date
             acc[gymId].checkInCount += 1;
           }
           return acc;

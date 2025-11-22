@@ -232,20 +232,51 @@ export const migrateContestCheckIns = onRequest(
         }
 
         // Calculate points, check-ins, and streak
+        // Group by UTC calendar day to ensure one check-in per day
+        const checkInsByDay = new Map<string, CheckInRecord>();
+        
+        checkIns.forEach((checkIn) => {
+          const date = checkIn.timestamp.toDate();
+          const dayKey = `${date.getUTCFullYear()}-${String(
+            date.getUTCMonth() + 1
+          ).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+          
+          // Keep the first check-in of each day (checkIns are ordered by timestamp asc)
+          if (!checkInsByDay.has(dayKey)) {
+            checkInsByDay.set(dayKey, checkIn);
+          }
+        });
+
+        // Convert to array and sort by date
+        const uniqueCheckIns = Array.from(checkInsByDay.entries())
+          .sort((a, b) => a[0].localeCompare(b[0])) // Sort by dayKey (YYYY-MM-DD)
+          .map(([, checkIn]) => checkIn);
+
         const pointsPerCheckIn = 10;
-        const totalPoints = checkIns.length * pointsPerCheckIn;
-        const totalCheckInsCount = checkIns.length;
+        const totalCheckInsCount = uniqueCheckIns.length;
+        const totalPoints = totalCheckInsCount * pointsPerCheckIn;
 
-        // Calculate streak (consecutive days)
-        let maxStreak = 1;
-        let currentStreak = 1;
+        // Calculate streak (consecutive UTC calendar days)
+        let maxStreak = uniqueCheckIns.length > 0 ? 1 : 0;
+        let currentStreak = uniqueCheckIns.length > 0 ? 1 : 0;
 
-        for (let i = 1; i < checkIns.length; i++) {
-          const prevDate = checkIns[i - 1].timestamp.toDate();
-          const currDate = checkIns[i].timestamp.toDate();
+        for (let i = 1; i < uniqueCheckIns.length; i++) {
+          const prevDate = uniqueCheckIns[i - 1].timestamp.toDate();
+          const currDate = uniqueCheckIns[i].timestamp.toDate();
 
-          const daysDiff = Math.floor(
-            (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+          // Calculate day difference using UTC dates
+          const prevDay = Date.UTC(
+            prevDate.getUTCFullYear(),
+            prevDate.getUTCMonth(),
+            prevDate.getUTCDate()
+          );
+          const currDay = Date.UTC(
+            currDate.getUTCFullYear(),
+            currDate.getUTCMonth(),
+            currDate.getUTCDate()
+          );
+          const daysDiff = Math.round(
+            (currDay - prevDay) / (1000 * 60 * 60 * 24)
           );
 
           if (daysDiff === 1) {
@@ -256,27 +287,40 @@ export const migrateContestCheckIns = onRequest(
           }
         }
 
-        const lastCheckIn = checkIns[checkIns.length - 1].timestamp;
-        const firstCheckIn = checkIns[0].timestamp;
+        const lastCheckIn = uniqueCheckIns.length > 0 
+          ? uniqueCheckIns[uniqueCheckIns.length - 1].timestamp 
+          : null;
+        const firstCheckIn = uniqueCheckIns.length > 0
+          ? uniqueCheckIns[0].timestamp
+          : null;
 
-        // Sanity check: ensure all check-ins are within contest period
-        const lastCheckInDate = lastCheckIn.toDate();
-        const firstCheckInDate = firstCheckIn.toDate();
-
-        if (lastCheckInDate < startDate || firstCheckInDate > endDate) {
+        // Log if user had duplicate check-ins on same day
+        if (checkIns.length !== uniqueCheckIns.length) {
           console.log(
-            `  ⚠️  WARNING: User ${displayName} has check-ins outside contest period!`
-          );
-          console.log(`     First check-in: ${firstCheckInDate.toISOString()}`);
-          console.log(`     Last check-in: ${lastCheckInDate.toISOString()}`);
-          console.log(
-            `     Contest: ${startDate.toISOString()} to ${endDate.toISOString()}`
+            `  ⚠️  User had ${checkIns.length - uniqueCheckIns.length} duplicate same-day check-ins (${checkIns.length} total -> ${uniqueCheckIns.length} unique days)`
           );
         }
 
-        console.log(
-          `  📅 Check-in dates: ${firstCheckInDate.toISOString()} to ${lastCheckInDate.toISOString()}`
-        );
+        // Sanity check: ensure all check-ins are within contest period
+        if (lastCheckIn && firstCheckIn) {
+          const lastCheckInDate = lastCheckIn.toDate();
+          const firstCheckInDate = firstCheckIn.toDate();
+
+          if (lastCheckInDate < startDate || firstCheckInDate > endDate) {
+            console.log(
+              `  ⚠️  WARNING: User ${displayName} has check-ins outside contest period!`
+            );
+            console.log(`     First check-in: ${firstCheckInDate.toISOString()}`);
+            console.log(`     Last check-in: ${lastCheckInDate.toISOString()}`);
+            console.log(
+              `     Contest: ${startDate.toISOString()} to ${endDate.toISOString()}`
+            );
+          }
+
+          console.log(
+            `  📅 Check-in dates: ${firstCheckInDate.toISOString()} to ${lastCheckInDate.toISOString()}`
+          );
+        }
 
         // Create or update participant data
         const participantData: ParticipantData = {
@@ -288,8 +332,8 @@ export const migrateContestCheckIns = onRequest(
           streak: maxStreak,
           rank: 0, // Will be updated in next step
           joinedAt: isNewParticipant
-            ? firstCheckIn
-            : participantDoc.data()?.joinedAt || firstCheckIn,
+            ? firstCheckIn!
+            : participantDoc.data()?.joinedAt || firstCheckIn!,
           lastCheckInAt: lastCheckIn,
           ...(gymName && { gymName }),
           ...(gymLogo && { gymLogo }),
